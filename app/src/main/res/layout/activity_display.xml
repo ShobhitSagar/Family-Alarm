@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#212121"
     tools:context=".DisplayActivity">
 
     <LinearLayout
@@ -20,20 +21,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Message"
-            android:textSize="20sp" />
+            android:textSize="30sp"
+            android:textColor="@color/white"/>
 
         <Button
             android:id="@+id/option1_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Option 1" />
+            android:text="Option 1"
+            android:textSize="30sp"/>
 
         <Button
             android:id="@+id/option2_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Option 2" />
+            android:text="Option 2"
+            android:textSize="30sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -71,7 +75,6 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="@color/yellow"
             android:text="Snooze" />
 
         <Button
@@ -80,7 +83,6 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_marginHorizontal="5dp"
-            android:background="@color/red"
             android:text="Cancel" />
 
     </LinearLayout>
