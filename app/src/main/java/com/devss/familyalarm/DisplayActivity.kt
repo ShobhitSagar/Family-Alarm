@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
@@ -33,5 +34,19 @@ class DisplayActivity : AppCompatActivity() {
                 Log.d(TAG, "Failed to read value.", error.toException())
             }
         })
+
+        option1_btn.setOnClickListener { disableAlert(myRef) }
+        option2_btn.setOnClickListener { disableAlert(myRef) }
+        reply_btn.setOnClickListener { disableAlert(myRef) }
+        call_btn.setOnClickListener { disableAlert(myRef) }
+        location_btn.setOnClickListener { disableAlert(myRef) }
+        snooze_btn.setOnClickListener { disableAlert(myRef) }
+        cancel_btn.setOnClickListener { disableAlert(myRef) }
+
+    }
+
+    fun disableAlert(myRef: DatabaseReference) {
+        myRef.child("alert").setValue("0")
+        finish()
     }
 }

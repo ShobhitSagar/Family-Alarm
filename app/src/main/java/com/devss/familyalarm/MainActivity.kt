@@ -3,6 +3,7 @@ package com.devss.familyalarm
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -14,30 +15,25 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var databaseRef: DatabaseReference
-
-    var alert = "0"
-
+    private val TAG = "MainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val database = Firebase.database
-        val alertRef = database.getReference("users/1")
+        val myRef = database.getReference("users/1/")
 
-//        myRef.setValue("Hello World!")
+        displayAlert(myRef)
 
-        databaseRef = Firebase.database.reference
+        send_btn.setOnClickListener { sendAlert(myRef) }
+    }
 
-        databaseRef.child("users").child("1").child("message").setValue("Hello World!")
+    private fun displayAlert(myRef: DatabaseReference) {
 
         val intent = Intent(this, DisplayActivity::class.java)
-
         val alertListner = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-//                Toast.makeText(applicationContext, snapshot.getValue().toString(), Toast.LENGTH_LONG).show()
-                temp_tv.text = snapshot.child("alert").value.toString()
+//                temp_tv.text = snapshot.child("users").toString()
                 if (snapshot.child("alert").value.toString().equals("1")) {
                     startActivity(intent)
                 }
@@ -47,6 +43,21 @@ class MainActivity : AppCompatActivity() {
                 TODO("Not yet implemented")
             }
         }
-        alertRef.addValueEventListener(alertListner)
+        myRef.addValueEventListener(alertListner)
+    }
+
+    fun sendAlert(myRef: DatabaseReference) {
+        val msg = message_et.text.toString()
+        val opt1 = opt1_et.text.toString()
+        val opt2 = opt2_et.text.toString()
+        if (msg.isNotEmpty()) {
+            myRef.child("message").setValue(msg)
+            myRef.child("alert").setValue("1")
+            myRef.child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
+            myRef.child("opt2").setValue(if (opt2.isNotEmpty()) opt1 else "NO")
+            myRef.child("call").setValue(if (call_cb.isChecked) "1" else "0")
+            myRef.child("call").setValue(if (location_cb.isChecked) "1" else "0")
+        } else
+            Toast.makeText(applicationContext, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
     }
 }
