@@ -16,47 +16,55 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/message_tv"
+        <LinearLayout
+            android:id="@+id/message_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Message"
-            android:textSize="30sp"
-            android:textColor="@color/white"/>
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/option1_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Option 1"
-            android:textSize="30sp"/>
+            <TextView
+                android:id="@+id/message_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Message"
+                android:textColor="@color/white"
+                android:textSize="30sp" />
 
-        <Button
-            android:id="@+id/option2_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Option 2"
-            android:textSize="30sp" />
+            <Button
+                android:id="@+id/option1_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Option 1"
+                android:textSize="30sp" />
+
+            <Button
+                android:id="@+id/option2_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Option 2"
+                android:textSize="30sp" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10px">
+            android:layout_marginTop="10px"
+            android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/reply_et"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Reply with a message"/>
+                android:hint="Reply with a message" />
 
             <Button
                 android:id="@+id/reply_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Reply"/>
+                android:text="Reply" />
 
         </LinearLayout>
 
@@ -72,13 +80,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Call" />
+            android:text="Call"
+            android:visibility="gone"/>
 
         <Button
             android:id="@+id/location_btn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Send Location" />
+            android:text="Send Location"
+            android:visibility="gone" />
 
     </LinearLayout>
 
@@ -100,10 +110,10 @@
 
         <Button
             android:id="@+id/cancel_btn"
-            android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
+            android:layout_weight="1"
             android:text="Cancel" />
 
     </LinearLayout>

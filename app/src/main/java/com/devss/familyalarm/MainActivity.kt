@@ -15,6 +15,8 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    private var reqFlag = false
     private val TAG = "MainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +24,13 @@ class MainActivity : AppCompatActivity() {
 
         val database = Firebase.database
         val myRef = database.getReference("users/1/")
+
+        call_cb.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) reqFlag = true else reqFlag = false
+        }
+        location_cb.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) reqFlag = true else reqFlag = false
+        }
 
         displayAlert(myRef)
 
@@ -50,13 +59,13 @@ class MainActivity : AppCompatActivity() {
         val msg = message_et.text.toString()
         val opt1 = opt1_et.text.toString()
         val opt2 = opt2_et.text.toString()
-        if (msg.isNotEmpty()) {
+        if (reqFlag or msg.isNotEmpty()) {
             myRef.child("message").setValue(msg)
             myRef.child("alert").setValue("1")
-            myRef.child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
-            myRef.child("opt2").setValue(if (opt2.isNotEmpty()) opt1 else "NO")
+            myRef.child("opt1 ").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
+            myRef.child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
             myRef.child("call").setValue(if (call_cb.isChecked) "1" else "0")
-            myRef.child("call").setValue(if (location_cb.isChecked) "1" else "0")
+            myRef.child("location").setValue(if (location_cb.isChecked) "1" else "0")
         } else
             Toast.makeText(applicationContext, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
     }
