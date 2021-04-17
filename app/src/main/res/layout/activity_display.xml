@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#212121"
     tools:context=".DisplayActivity">
 
     <LinearLayout
@@ -15,6 +14,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/sender_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"/>
 
         <LinearLayout
             android:id="@+id/message_layout"
@@ -27,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Message"
-                android:textColor="@color/white"
+                android:textColor="@color/black"
                 android:textSize="30sp" />
 
             <Button

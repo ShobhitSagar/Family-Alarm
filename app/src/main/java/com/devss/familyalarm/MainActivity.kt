@@ -18,12 +18,22 @@ class MainActivity : AppCompatActivity() {
 
     private var reqFlag = false
     private val TAG = "MainActivity"
+    private val curUserId = "1"
+    var userId = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val database = Firebase.database
-        val myRef = database.getReference("users/1/")
+        val myRef = database.getReference("users/")
+
+        myRef.child(curUserId).child("name").get().addOnSuccessListener {
+            val appLabel = it.value.toString()
+            title = if ((appLabel == "null") or (appLabel == "")) appLabel() else appLabel
+        }.addOnFailureListener {
+            title = appLabel()
+        }
 
         call_cb.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) reqFlag = true else reqFlag = false
@@ -32,19 +42,19 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) reqFlag = true else reqFlag = false
         }
 
-        displayAlert(myRef)
+        startNotificationService("Family Alarm is running in background.")
 
-        send_btn.setOnClickListener { sendAlert(myRef) }
+        send_btn.setOnClickListener {
+            userId = id_et.text.toString()
+            sendAlert(myRef)
+        }
     }
 
-    private fun displayAlert(myRef: DatabaseReference) {
-
-        val intent = Intent(this, DisplayActivity::class.java)
-        val alertListner = object : ValueEventListener {
+    private fun listenReceiver(myRef: DatabaseReference) {
+        val postListner = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-//                temp_tv.text = snapshot.child("users").toString()
-                if (snapshot.child("alert").value.toString().equals("1")) {
-                    startActivity(intent)
+                if (snapshot.child("received").value.toString() == "1") {
+                    Toast.makeText(applicationContext, "Message Delivered!", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -52,7 +62,11 @@ class MainActivity : AppCompatActivity() {
                 TODO("Not yet implemented")
             }
         }
-        myRef.addValueEventListener(alertListner)
+        myRef.child(userId).addValueEventListener(postListner)
+    }
+
+    private fun appLabel(): String {
+        return applicationInfo.loadLabel(packageManager).toString()
     }
 
     fun sendAlert(myRef: DatabaseReference) {
@@ -60,13 +74,24 @@ class MainActivity : AppCompatActivity() {
         val opt1 = opt1_et.text.toString()
         val opt2 = opt2_et.text.toString()
         if (reqFlag or msg.isNotEmpty()) {
-            myRef.child("message").setValue(msg)
-            myRef.child("alert").setValue("1")
-            myRef.child("opt1 ").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
-            myRef.child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
-            myRef.child("call").setValue(if (call_cb.isChecked) "1" else "0")
-            myRef.child("location").setValue(if (location_cb.isChecked) "1" else "0")
+            myRef.child(userId).child("message").setValue(msg)
+            myRef.child(userId).child("sender").setValue(curUserId)
+            myRef.child(userId).child("alert").setValue("1")
+            myRef.child(userId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
+            myRef.child(userId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
+            myRef.child(userId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
+            myRef.child(userId).child("location").setValue(if (location_cb.isChecked) "1" else "0")
+
+            Toast.makeText(this, "Message Sent!", Toast.LENGTH_SHORT).show()
+            listenReceiver(myRef)
         } else
-            Toast.makeText(applicationContext, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun startNotificationService(msg: String) {
+        val serviceIntent = Intent(this, MyService::class.java)
+        serviceIntent.putExtra("inputExtra", msg)
+        serviceIntent.putExtra("curuserid", curUserId)
+        startService(serviceIntent)
     }
 }

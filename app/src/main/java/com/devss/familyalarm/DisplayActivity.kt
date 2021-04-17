@@ -22,7 +22,7 @@ class DisplayActivity : AppCompatActivity() {
         setContentView(R.layout.activity_display)
 
         val database = Firebase.database
-        val myRef = database.getReference("users/1")
+        val myRef = database.getReference("users/1/")
 
         displayAlert(myRef)
 
@@ -37,8 +37,10 @@ class DisplayActivity : AppCompatActivity() {
     }
 
     private fun displayAlert(myRef: DatabaseReference) {
+        myRef.child("received").setValue("1")
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                sender_tv.text = snapshot.child("sender").value.toString()
                 val msg = snapshot.child("message").getValue().toString()
 
                 if (msg.isNotEmpty()) {
@@ -58,6 +60,7 @@ class DisplayActivity : AppCompatActivity() {
 
     fun disableAlert(myRef: DatabaseReference) {
         myRef.child("alert").setValue("0")
+        myRef.child("received").setValue("0")
         finish()
     }
 }
