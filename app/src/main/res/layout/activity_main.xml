@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
@@ -11,11 +12,14 @@
         android:id="@+id/id_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/design_default_color_primary_dark"
         android:hint="Enter ID"
+        android:imeOptions="actionNext"
+        android:inputType="text"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/enter_msg_tv"
@@ -25,13 +29,16 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/id_et"/>
+        app:layout_constraintTop_toBottomOf="@+id/id_et" />
 
     <EditText
         android:id="@+id/message_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/design_default_color_primary_dark"
         android:hint="Message"
+        android:imeOptions="actionNext"
+        android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/enter_msg_tv" />
@@ -51,7 +58,10 @@
         android:id="@+id/opt1_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/design_default_color_primary_dark"
         android:hint="YES"
+        android:imeOptions="actionNext"
+        android:inputType="text"
         android:maxLines="1"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -62,7 +72,10 @@
         android:id="@+id/opt2_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/design_default_color_primary_dark"
         android:hint="NO"
+        android:imeOptions="actionNext"
+        android:inputType="text"
         android:maxLines="1"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -73,17 +86,18 @@
         android:id="@+id/request_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:text="Request :"
         android:textSize="20sp"
-        android:layout_marginTop="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/opt2_et"/>
+        app:layout_constraintTop_toBottomOf="@+id/opt2_et" />
 
     <CheckBox
         android:id="@+id/call_cb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:buttonTint="@color/design_default_color_primary_dark"
         android:text="Call"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -93,6 +107,7 @@
         android:id="@+id/location_cb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:buttonTint="@color/design_default_color_primary_dark"
         android:text="Location"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -102,9 +117,11 @@
         android:id="@+id/temp_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/send_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/send_btn"
