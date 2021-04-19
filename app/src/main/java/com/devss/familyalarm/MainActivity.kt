@@ -20,20 +20,22 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private var reqFlag = false
-    private var curUserId = "1"
+    private lateinit var curUserId: String
     var receiverId = ""
     private var pressedTime = 0L
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var myRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val database = Firebase.database
-        val myRef = database.getReference("users/")
-
         verifyCurrentUser()
+
+        val database = Firebase.database
+        myRef = database.getReference("users/")
+        initialiseUserData()
 
         myRef.child(curUserId).child("name").get().addOnSuccessListener {
             val userName = it.value.toString()
@@ -55,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         send_btn.setOnClickListener {
             val id = id_et.text.toString()
             receiverId = if (id.isNotBlank()) id else "1"
-            sendAlert(myRef)
+            sendAlert()
         }
     }
 
@@ -71,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun listenReceiver(myRef: DatabaseReference) {
+    private fun listenReceiver() {
 
         myRef.child(receiverId).child("received").addValueEventListener(object :
             ValueEventListener {
@@ -120,7 +122,7 @@ class MainActivity : AppCompatActivity() {
         return applicationInfo.loadLabel(packageManager).toString()
     }
 
-    fun sendAlert(myRef: DatabaseReference) {
+    fun sendAlert() {
         val msg = message_et.text.toString()
         val opt1 = opt1_et.text.toString()
         val opt2 = opt2_et.text.toString()
@@ -135,7 +137,7 @@ class MainActivity : AppCompatActivity() {
             myRef.child(receiverId).child("location").setValue(if (location_cb.isChecked) "1" else "0")
 
             Toast.makeText(this, "Message Sent!", Toast.LENGTH_SHORT).show()
-            listenReceiver(myRef)
+            listenReceiver()
         } else
             Toast.makeText(this, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
     }
@@ -147,6 +149,20 @@ class MainActivity : AppCompatActivity() {
 //        serviceIntent.putExtra("receiverid", receiverId)
 //        Toast.makeText(this, curUserId +" | "+ receiverId, Toast.LENGTH_SHORT).show()
         startService(serviceIntent)
+    }
+
+    private fun initialiseUserData() {
+        myRef.child(curUserId).child("alert").setValue("0")
+        myRef.child(curUserId).child("message").setValue("")
+        myRef.child(curUserId).child("opt1").setValue("YES")
+        myRef.child(curUserId).child("opt2").setValue("NO")
+        myRef.child(curUserId).child("received").setValue("0")
+        myRef.child(curUserId).child("reply").setValue("")
+        myRef.child(curUserId).child("sender").setValue("")
+        myRef.child(curUserId).child("sendername").setValue("")
+
+        myRef.child(curUserId).child("call").setValue("0")
+        myRef.child(curUserId).child("location").setValue("0")
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

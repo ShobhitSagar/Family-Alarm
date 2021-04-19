@@ -38,8 +38,12 @@ class DisplayActivity : AppCompatActivity() {
 
         displayAlert()
 
-        option1_btn.setOnClickListener { cancelAlert() }
-        option2_btn.setOnClickListener { cancelAlert() }
+        option1_btn.setOnClickListener {
+            sendReply(option1_btn.text.toString())
+        }
+        option2_btn.setOnClickListener {
+            sendReply(option2_btn.text.toString())
+        }
         reply_btn.setOnClickListener { 
             val text = reply_et.text.trim().toString()
             if (text.isNotEmpty() or text.isNotBlank()) sendReply(text) else Toast.makeText(
