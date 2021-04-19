@@ -20,6 +20,7 @@ class DisplayActivity : AppCompatActivity() {
 
     private val TAG = "DisplayActivity"
     private lateinit var currentUserId: String
+    private var currentUserName = ""
     private var senderId = ""
     private var pressedTime = 0L
 
@@ -47,13 +48,10 @@ class DisplayActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-        call_btn.setOnClickListener {  }
-        location_btn.setOnClickListener {  }
+        call_btn.setOnClickListener { cancelAlert() }
+        location_btn.setOnClickListener { cancelAlert() }
         snooze_btn.setOnClickListener { cancelAlert() }
-        cancel_btn.setOnClickListener {
-            setAlert("0")
-            cancelAlert()
-        }
+        cancel_btn.setOnClickListener { cancelAlert() }
 
     }
 
@@ -64,13 +62,11 @@ class DisplayActivity : AppCompatActivity() {
     }
 
     private fun sendReply(text: String) {
-        setAlert("2")
+        myRef.child(senderId).child("alert").setValue("2")
         myRef.child(senderId).child("reply").setValue(text)
+        myRef.child(senderId).child("sender").setValue(currentUserId)
+        myRef.child(senderId).child("sendername").setValue(currentUserName)
         cancelAlert()
-    }
-
-    private fun setAlert(i: String) {
-        myRef.child(currentUserId).child("alert").setValue(i)
     }
 
     private fun displayAlert() {
@@ -86,7 +82,8 @@ class DisplayActivity : AppCompatActivity() {
         myRef.child(currentUserId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 senderId = snapshot.child("sender").value.toString()
-                myRef.child(senderId).child("name").get().addOnSuccessListener { sender_tv.text = it.value.toString() }
+                    currentUserName = snapshot.child("name").value.toString()
+                    sender_tv.text = currentUserName
 
                 val msg = snapshot.child("message").getValue().toString()
 
@@ -106,25 +103,26 @@ class DisplayActivity : AppCompatActivity() {
     }
 
     private fun cancelAlert() {
-        resetUserData(myRef)
+        resetUserData()
         finish()
     }
 
-    private fun resetUserData(myRef: DatabaseReference) {
+    private fun resetUserData() {
+        myRef.child(currentUserId).child("alert").setValue("0")
         myRef.child(currentUserId).child("message").setValue("")
         myRef.child(currentUserId).child("opt1").setValue("YES")
         myRef.child(currentUserId).child("opt2").setValue("NO")
+
         myRef.child(currentUserId).child("call").setValue("0")
         myRef.child(currentUserId).child("location").setValue("0")
-//        myRef.child(currentUserId).child("alert").setValue("0")
     }
 
     // TODO: Handle back pressed
     override fun onBackPressed() {
 
         if (pressedTime + 2000 > System.currentTimeMillis()) {
+            resetUserData()
             super.onBackPressed()
-            setAlert("0")
             finish()
         } else {
             Snackbar.make(root_layout, "Press back again to Cancel!", Snackbar.LENGTH_SHORT).show()

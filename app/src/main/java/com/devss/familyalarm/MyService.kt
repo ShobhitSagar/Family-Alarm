@@ -22,14 +22,40 @@ class MyService : Service() {
     private val TAG = "MyService"
     private lateinit var auth: FirebaseAuth
     private lateinit var currentUserId: String
+    private var senderName: String = ""
+    private lateinit var dbRef: DatabaseReference
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         authenticateUser()
-        var receiverDB: DatabaseReference = Firebase.database.reference.child("users").child(currentUserId)
+        dbRef = Firebase.database.reference.child("users").child(currentUserId)
 
-        displayAlert(receiverDB)
+//        dbRef.child("name").get().addOnSuccessListener { senderName = it.value.toString() }
+
+        displayAlert()
         createNotification()
+
+        showNotification()
         return START_STICKY
+    }
+
+    private fun showNotification() {
+
+        dbRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val alert = snapshot.child("alert").value.toString()
+                val reply = snapshot.child("reply").value.toString()
+
+                if (alert == "2") {
+                    senderName = snapshot.child("sendername").value.toString()
+                    Toast.makeText(applicationContext, "Replied!", Toast.LENGTH_SHORT).show()
+                    showReplyNotification(reply)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
     private fun createNotification() {
@@ -53,19 +79,19 @@ class MyService : Service() {
         TODO("Not yet implemented")
     }
 
-    private fun displayAlert(receiverDB: DatabaseReference) {
+    private fun displayAlert() {
 
         val intent = Intent(this, DisplayActivity::class.java)
 
         // TODO: WHY THIS FLAG
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-        receiverDB.child("alert").addValueEventListener(object : ValueEventListener {
+        dbRef.child("alert").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val alert = snapshot.value
 
                 if (alert == "1") {
-//                    receiverDB.child("message").get().addOnSuccessListener { message = it.value.toString() }
+//                    dbRef.child("message").get().addOnSuccessListener { message = it.value.toString() }
                     createNotification()
                     startActivity(intent)
                 }
@@ -79,29 +105,14 @@ class MyService : Service() {
                 TODO("Not yet implemented")
             }
         })
-
-        receiverDB.child("reply").addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val msg = snapshot.value.toString()
-
-                if (msg.isNotBlank()) {
-                    Toast.makeText(applicationContext, "Replied!", Toast.LENGTH_SHORT).show()
-                    showReplyNotification("Worked")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-        })
     }
 
-    private fun showReplyNotification(msg: String) {
+    private fun showReplyNotification(reply: String) {
 
         var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_profile)
-            .setContentTitle("textTitle")
-            .setContentText("textContent")
+            .setContentTitle(senderName)
+            .setContentText(reply)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 
@@ -128,7 +139,7 @@ class MyService : Service() {
 //
 //        val notification: Notification? = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
 //            .setContentTitle("Reply")
-//            .setContentText(msg)
+//            .setContentText(reply)
 //            .setSmallIcon(R.drawable.ic_profile)
 //            .setContentIntent(pendingIntent)
 //            .setAutoCancel(true)
