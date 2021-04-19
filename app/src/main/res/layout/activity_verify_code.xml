@@ -7,17 +7,17 @@
     android:padding="16dp"
     tools:context=".VerifyCodeActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter code"
-        android:textAlignment="center"
-        android:textColor="@color/design_default_color_primary_dark"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+<!--    <TextView-->
+<!--        android:id="@+id/textView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Enter code"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/design_default_color_primary_dark"-->
+<!--        android:textSize="20sp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
     <TextView
         android:id="@+id/tv"
@@ -38,7 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="16dp"
-        android:backgroundTint="@color/design_default_color_primary_dark"
         android:fontFamily="monospace"
         android:hint="------"
         android:maxLength="6"

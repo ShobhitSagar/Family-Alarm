@@ -36,7 +36,6 @@
                             android:textAlignment="center"
                             android:inputType="textCapWords"
                             android:paddingHorizontal="12dp"
-                            android:backgroundTint="@color/design_default_color_primary_dark"
                             android:hint="Name"/>
 
                         <Button

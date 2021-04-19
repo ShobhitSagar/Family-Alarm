@@ -1,10 +1,8 @@
 package com.devss.familyalarm
 
-import android.content.DialogInterface
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -16,7 +14,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -131,6 +128,7 @@ class MainActivity : AppCompatActivity() {
             myRef.child(receiverId).child("message").setValue(msg)
             myRef.child(receiverId).child("sender").setValue(curUserId)
             myRef.child(receiverId).child("alert").setValue("1")
+            myRef.child(receiverId).child("reply").setValue("")
             myRef.child(receiverId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
             myRef.child(receiverId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
             myRef.child(receiverId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
@@ -181,6 +179,9 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.profile -> {
                 startActivity(Intent(this, ProfileActivity::class.java))
+            }
+            R.id.settings -> {
+                startActivity(Intent(this, SettingActivity::class.java))
             }
         }
 

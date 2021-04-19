@@ -9,6 +9,10 @@
         app:showAsAction="ifRoom"/>
 
     <item
+        android:id="@+id/settings"
+        android:title="Settings"/>
+
+    <item
         android:id="@+id/logout"
         android:title="Logout"
         android:icon="@drawable/ic_logout"/>

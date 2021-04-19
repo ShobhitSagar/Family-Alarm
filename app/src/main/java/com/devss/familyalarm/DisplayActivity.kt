@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -13,14 +14,17 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_display.*
+import kotlinx.android.synthetic.main.activity_main.*
 
 class DisplayActivity : AppCompatActivity() {
 
     private val TAG = "DisplayActivity"
     private lateinit var currentUserId: String
     private var senderId = ""
+    private var pressedTime = 0L
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var myRef: DatabaseReference
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,16 +33,15 @@ class DisplayActivity : AppCompatActivity() {
         currentUser()
 
         val database = Firebase.database
-        val myRef = database.getReference("users/")
-        val dbRef = database.getReference("users/")
+        myRef = database.getReference("users/")
 
-        displayAlert(myRef)
+        displayAlert()
 
-        option1_btn.setOnClickListener { cancelAlert(myRef) }
-        option2_btn.setOnClickListener { cancelAlert(myRef) }
+        option1_btn.setOnClickListener { cancelAlert() }
+        option2_btn.setOnClickListener { cancelAlert() }
         reply_btn.setOnClickListener { 
             val text = reply_et.text.trim().toString()
-            if (text.isNotEmpty() or text.isNotBlank()) sendReply(myRef, dbRef, text) else Toast.makeText(
+            if (text.isNotEmpty() or text.isNotBlank()) sendReply(text) else Toast.makeText(
                 this,
                 "Enter a reply.",
                 Toast.LENGTH_SHORT
@@ -46,8 +49,11 @@ class DisplayActivity : AppCompatActivity() {
         }
         call_btn.setOnClickListener {  }
         location_btn.setOnClickListener {  }
-        snooze_btn.setOnClickListener { cancelAlert(myRef) }
-        cancel_btn.setOnClickListener { cancelAlert(myRef) }
+        snooze_btn.setOnClickListener { cancelAlert() }
+        cancel_btn.setOnClickListener {
+            setAlert("0")
+            cancelAlert()
+        }
 
     }
 
@@ -57,13 +63,17 @@ class DisplayActivity : AppCompatActivity() {
         if (auth.toString().isNotBlank()) currentUserId = auth.currentUser.phoneNumber
     }
 
-    private fun sendReply(myRef: DatabaseReference, dbRef: DatabaseReference, text: String) {
-        val senderId = sender_tv.text.toString()
-        dbRef.child(senderId).child("reply").setValue(text)
-        cancelAlert(myRef)
+    private fun sendReply(text: String) {
+        setAlert("2")
+        myRef.child(senderId).child("reply").setValue(text)
+        cancelAlert()
     }
 
-    private fun displayAlert(myRef: DatabaseReference) {
+    private fun setAlert(i: String) {
+        myRef.child(currentUserId).child("alert").setValue(i)
+    }
+
+    private fun displayAlert() {
         myRef.child(currentUserId).child("received").setValue("1")
 
 //        myRef.child(currentUserId).child("sender").get().addOnSuccessListener { senderId = it.value.toString() }
@@ -95,17 +105,31 @@ class DisplayActivity : AppCompatActivity() {
         })
     }
 
-    fun cancelAlert(myRef: DatabaseReference) {
+    private fun cancelAlert() {
         resetUserData(myRef)
         finish()
     }
 
     private fun resetUserData(myRef: DatabaseReference) {
-//        myRef.child(currentUserId).child("received").setValue("0")
+        myRef.child(currentUserId).child("message").setValue("")
         myRef.child(currentUserId).child("opt1").setValue("YES")
         myRef.child(currentUserId).child("opt2").setValue("NO")
         myRef.child(currentUserId).child("call").setValue("0")
         myRef.child(currentUserId).child("location").setValue("0")
-        myRef.child(currentUserId).child("alert").setValue("0")
+//        myRef.child(currentUserId).child("alert").setValue("0")
+    }
+
+    // TODO: Handle back pressed
+    override fun onBackPressed() {
+
+        if (pressedTime + 2000 > System.currentTimeMillis()) {
+            super.onBackPressed()
+            setAlert("0")
+            finish()
+        } else {
+            Snackbar.make(root_layout, "Press back again to Cancel!", Snackbar.LENGTH_SHORT).show()
+        }
+        pressedTime = System.currentTimeMillis()
+
     }
 }

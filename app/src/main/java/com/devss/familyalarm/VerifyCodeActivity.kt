@@ -19,6 +19,7 @@ class VerifyCodeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_verify_code)
+        title = "Enter your Code"
 
         auth = FirebaseAuth.getInstance()
         storedVerificationId = intent.getStringExtra("storedVerificationId").toString()

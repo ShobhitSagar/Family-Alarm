@@ -8,19 +8,35 @@ import android.os.Build
 class App : Application() {
 
     companion object {
-        val CHANNEL_ID = "exampleServiceChannel"
+        val SERVICE_CHANNEL_ID = "alarmServiceChannel"
+        val REPLY_CHANNEL_ID = "replyServiceChannel"
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        createNotificationChannel()
+        createServiceNotificationChannel()
+        createReplyNotificationChannel()
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) run {
+    // TODO: REPLY NOTIFICATION
+    private fun createReplyNotificationChannel() {
+        if (versionIsAboveOreo()) run {
+            val replyChannel = NotificationChannel(
+                REPLY_CHANNEL_ID,
+                "Reply Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(replyChannel)
+        }
+    }
+
+    private fun createServiceNotificationChannel() {
+        if (versionIsAboveOreo()) run {
             val serviceChannel = NotificationChannel(
-                    CHANNEL_ID,
+                    SERVICE_CHANNEL_ID,
                     "Example Service Channel",
                     NotificationManager.IMPORTANCE_DEFAULT
             )
@@ -28,5 +44,9 @@ class App : Application() {
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(serviceChannel)
         }
+    }
+
+    private fun versionIsAboveOreo(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     }
 }
