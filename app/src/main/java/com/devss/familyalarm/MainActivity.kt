@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var curUserId: String
     var receiverId = ""
     private var pressedTime = 0L
+    private var alertFlag = false
 
     private lateinit var serviceIntent: Intent
 
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity() {
 
         // Service Starts
         stopService(serviceIntent)
+        displayAlert()
 
         send_btn.setOnClickListener {
             val id = id_et.text.toString()
@@ -128,6 +130,22 @@ class MainActivity : AppCompatActivity() {
             listenReceiver()
         } else
             Toast.makeText(this, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun displayAlert() {
+        myRef.child(curUserId).child("alert").addValueEventListener(object :
+            ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val alert = snapshot.value.toString()
+                if (alert == "1") {
+                    startActivity(Intent(applicationContext, DisplayActivity::class.java))
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
     private fun initialiseUserData() {

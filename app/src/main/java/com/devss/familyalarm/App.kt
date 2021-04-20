@@ -16,7 +16,7 @@ class App : Application() {
         super.onCreate()
 
         createServiceNotificationChannel()
-        createReplyNotificationChannel()
+//        createReplyNotificationChannel()
     }
 
     // TODO: REPLY NOTIFICATION
@@ -36,10 +36,12 @@ class App : Application() {
     private fun createServiceNotificationChannel() {
         if (versionIsAboveOreo()) run {
             val serviceChannel = NotificationChannel(
-                    SERVICE_CHANNEL_ID,
-                    "Example Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                SERVICE_CHANNEL_ID,
+                "Example Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT,
             )
+            serviceChannel.setShowBadge(false)
+            serviceChannel.setSound(null, null)
 
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(serviceChannel)
