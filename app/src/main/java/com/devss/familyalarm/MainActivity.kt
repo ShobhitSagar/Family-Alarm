@@ -2,14 +2,21 @@ package com.devss.familyalarm
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ContentResolver
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.database.Cursor
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.ContactsContract
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.devss.familyalarm.ReplyNotification.Companion.REPLY_CHANNEL_ID
@@ -29,8 +36,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var curUserId: String
     var receiverId = ""
     private var senderName = ""
+    private lateinit var userAllContacts: ArrayList<String>
     private var pressedTime = 0L
     private var alertFlag = false
+    private val tempContacts = arrayOf("Shobhit", "Mahavir", "Vipul", "Shubham", "Rinku", "Sudo", "Sagar")
 
     private lateinit var serviceIntent: Intent
 
@@ -42,8 +51,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            userAllContacts = userContacts()
+
+            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, tempContacts)
+            id_actv.setAdapter(adapter)
+            Log.d(TAG, "onCreate: $userAllContacts")
+            Log.d(TAG, "onCreate: $tempContacts")
+        } else Toast.makeText(this, "Contact permission is not granted!", Toast.LENGTH_SHORT).show()
+
+
         verifyCurrentUser()
         serviceIntent = Intent(this, MyService::class.java)
+
         // Stop Service
         stopService(serviceIntent)
 
@@ -258,6 +278,42 @@ class MainActivity : AppCompatActivity() {
         }
         pressedTime = System.currentTimeMillis()
 
+    }
+
+    private fun userContacts(): ArrayList<String> {
+        var nameList: ArrayList<String> = ArrayList<String>()
+        val cr: ContentResolver = contentResolver
+        var cur: Cursor? = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null)
+
+        if ((if(cur != null) cur.getCount() else 0) > 0) {
+            while (cur != null && cur.moveToNext()) {
+                val id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID))
+                cur.getColumnIndex(ContactsContract.Contacts._ID)
+                val name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
+                nameList.add(name)
+                if (cur.getInt(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
+                    var pCur: Cursor? = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                        arrayOf<String?>(id),
+//                        Array<String?>(){id},
+                        null
+                    )
+                    if (pCur != null) {
+                        while (pCur.moveToNext()) {
+                            val phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                        }
+                        pCur.close()
+                    }
+                }
+            }
+        }
+
+        if (cur != null) {
+            cur.close()
+        }
+
+        return nameList
     }
 
     override fun onStop() {
