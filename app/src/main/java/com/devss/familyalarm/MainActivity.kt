@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
     var receiverId = ""
     private var pressedTime = 0L
 
+    private lateinit var serviceIntent: Intent
+
     private lateinit var auth: FirebaseAuth
     private lateinit var myRef: DatabaseReference
 
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         verifyCurrentUser()
+        serviceIntent = Intent(this, MyService::class.java)
 
         val database = Firebase.database
         myRef = database.getReference("users/")
@@ -52,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Service Starts
-        startNotificationService("Family Alarm is running in background.")
+        stopService(serviceIntent)
 
         send_btn.setOnClickListener {
             val id = id_et.text.toString()
@@ -101,21 +104,6 @@ class MainActivity : AppCompatActivity() {
                 TODO("Not yet implemented")
             }
         })
-
-//        val postListner = object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                if (snapshot.child(receiverId).child("received").value.toString() == "1") {
-//                    Toast.makeText(applicationContext, "Message Delivered!", Toast.LENGTH_SHORT)
-//                        .show()
-//                }
-//                temp_tv.text = snapshot.child(curUserId).child("reply").value.toString()
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//        }
-//        myRef.addValueEventListener(postListner)
     }
 
     private fun appLabel(): String {
@@ -140,15 +128,6 @@ class MainActivity : AppCompatActivity() {
             listenReceiver()
         } else
             Toast.makeText(this, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun startNotificationService(msg: String) {
-        val serviceIntent = Intent(this, MyService::class.java)
-//        serviceIntent.putExtra("inputExtra", msg)
-//        serviceIntent.putExtra("senderid", curUserId)
-//        serviceIntent.putExtra("receiverid", receiverId)
-//        Toast.makeText(this, curUserId +" | "+ receiverId, Toast.LENGTH_SHORT).show()
-        startService(serviceIntent)
     }
 
     private fun initialiseUserData() {
@@ -215,5 +194,29 @@ class MainActivity : AppCompatActivity() {
         }
         pressedTime = System.currentTimeMillis()
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        toastS("Paused!")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        toastS("Started!")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        toastS("Stopped!")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        startService(serviceIntent)
+    }
+
+    open fun toastS(string: String) {
+        Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
     }
 }

@@ -26,7 +26,7 @@ class DisplayActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var myRef: DatabaseReference
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_display)
@@ -44,7 +44,7 @@ class DisplayActivity : AppCompatActivity() {
         option2_btn.setOnClickListener {
             sendReply(option2_btn.text.toString())
         }
-        reply_btn.setOnClickListener { 
+        reply_btn.setOnClickListener {
             val text = reply_et.text.trim().toString()
             if (text.isNotEmpty() or text.isNotBlank()) sendReply(text) else Toast.makeText(
                 this,
@@ -86,8 +86,8 @@ class DisplayActivity : AppCompatActivity() {
         myRef.child(currentUserId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 senderId = snapshot.child("sender").value.toString()
-                    currentUserName = snapshot.child("name").value.toString()
-                    sender_tv.text = currentUserName
+                currentUserName = snapshot.child("name").value.toString()
+                sender_tv.text = currentUserName
 
                 val msg = snapshot.child("message").getValue().toString()
 
@@ -96,8 +96,10 @@ class DisplayActivity : AppCompatActivity() {
                     option1_btn.text = snapshot.child("opt1").value.toString()
                     option2_btn.text = snapshot.child("opt2").value.toString()
                 } else message_layout.visibility = View.GONE
-                if (snapshot.child("call").value.toString() == "1") call_btn.visibility = View.VISIBLE
-                if (snapshot.child("location").value.toString() == "1") location_btn.visibility = View.VISIBLE
+                if (snapshot.child("call").value.toString() == "1") call_btn.visibility =
+                    View.VISIBLE
+                if (snapshot.child("location").value.toString() == "1") location_btn.visibility =
+                    View.VISIBLE
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -123,15 +125,7 @@ class DisplayActivity : AppCompatActivity() {
 
     // TODO: Handle back pressed
     override fun onBackPressed() {
-
-        if (pressedTime + 2000 > System.currentTimeMillis()) {
-            resetUserData()
-            super.onBackPressed()
-            finish()
-        } else {
-            Snackbar.make(root_layout, "Press back again to Cancel!", Snackbar.LENGTH_SHORT).show()
-        }
-        pressedTime = System.currentTimeMillis()
-
+        resetUserData()
+        finish()
     }
 }

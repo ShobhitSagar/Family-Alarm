@@ -29,8 +29,6 @@ class MyService : Service() {
         authenticateUser()
         dbRef = Firebase.database.reference.child("users").child(currentUserId)
 
-//        dbRef.child("name").get().addOnSuccessListener { senderName = it.value.toString() }
-
         displayAlert()
         createNotification()
 
@@ -91,14 +89,9 @@ class MyService : Service() {
                 val alert = snapshot.value
 
                 if (alert == "1") {
-//                    dbRef.child("message").get().addOnSuccessListener { message = it.value.toString() }
                     createNotification()
                     startActivity(intent)
                 }
-
-//                if (alert == "2") {
-//                    showReplyNotification("Worked")
-//                }
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -132,18 +125,5 @@ class MyService : Service() {
         with(NotificationManagerCompat.from(this)) {
             notify(555, builder.build())
         }
-
-
-//        val notifIntent = Intent(this, MainActivity::class.java)
-//        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notifIntent, 0)
-//
-//        val notification: Notification? = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
-//            .setContentTitle("Reply")
-//            .setContentText(reply)
-//            .setSmallIcon(R.drawable.ic_profile)
-//            .setContentIntent(pendingIntent)
-//            .setAutoCancel(true)
-//            .build()
-//        startForeground(2, notification)
     }
 }
