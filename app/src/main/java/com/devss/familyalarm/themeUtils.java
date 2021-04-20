@@ -23,7 +23,7 @@ public class themeUtils {
         {
             default:
             case BLACK:
-                activity.setTheme(R.style.Theme_FamilyAlarm);
+                activity.setTheme(R.style.Theme_FamilyAlarm_Gray);
                 break;
             case BLUE:
                 activity.setTheme(R.style.Theme_FamilyAlarm_Blue);

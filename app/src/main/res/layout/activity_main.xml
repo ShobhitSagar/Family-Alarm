@@ -8,6 +8,17 @@
     android:padding="10dp"
     tools:context=".MainActivity">
 
+    <AutoCompleteTextView
+        android:id="@+id/id_actv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contact"
+        android:textSize="20sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <EditText
         android:id="@+id/id_et"
         android:layout_width="match_parent"
@@ -15,10 +26,11 @@
         android:hint="Enter ID"
         android:imeOptions="actionNext"
         android:inputType="text"
+        android:text="+919560258881"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/id_actv" />
 
     <TextView
         android:id="@+id/enter_msg_tv"

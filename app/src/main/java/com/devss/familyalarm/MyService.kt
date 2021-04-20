@@ -108,11 +108,14 @@ class MyService : Service() {
     }
 
     private fun showReplyNotification(reply: String) {
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
         var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_profile)
             .setContentTitle(senderName)
             .setContentText(reply)
+            .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
 

@@ -3,6 +3,7 @@ package com.devss.familyalarm
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -21,11 +22,12 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
     private var reqFlag = false
     private lateinit var curUserId: String
+    private lateinit var userName: String
     var receiverId = ""
     private var pressedTime = 0L
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var myRef: DatabaseReference
+    private lateinit var usersDbRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,11 +36,11 @@ class MainActivity : AppCompatActivity() {
         verifyCurrentUser()
 
         val database = Firebase.database
-        myRef = database.getReference("users/")
+        usersDbRef = database.getReference("users/")
         initialiseUserData()
 
-        myRef.child(curUserId).child("name").get().addOnSuccessListener {
-            val userName = it.value.toString()
+        usersDbRef.child(curUserId).child("name").get().addOnSuccessListener {
+            userName = it.value.toString()
             title = userName
         }.addOnFailureListener {
             title = appLabel()
@@ -75,14 +77,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun listenReceiver() {
 
-        myRef.child(receiverId).child("received").addValueEventListener(object :
+        usersDbRef.child(receiverId).child("received").addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val received = snapshot.value
                 if (received == "1") {
                     Toast.makeText(applicationContext, "Message Delivered!", Toast.LENGTH_SHORT)
                         .show()
-                    myRef.child(receiverId).child("received").setValue("0")
+                    usersDbRef.child(receiverId).child("received").setValue("0")
                 }
             }
 
@@ -91,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        myRef.child(curUserId).child("reply").addValueEventListener(object :
+        usersDbRef.child(curUserId).child("reply").addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 temp_tv.text = snapshot.value.toString()
@@ -115,7 +117,7 @@ class MainActivity : AppCompatActivity() {
 //                TODO("Not yet implemented")
 //            }
 //        }
-//        myRef.addValueEventListener(postListner)
+//        usersDbRef.addValueEventListener(postListner)
     }
 
     private fun appLabel(): String {
@@ -127,14 +129,15 @@ class MainActivity : AppCompatActivity() {
         val opt1 = opt1_et.text.toString()
         val opt2 = opt2_et.text.toString()
         if (reqFlag or msg.isNotEmpty()) {
-            myRef.child(receiverId).child("message").setValue(msg)
-            myRef.child(receiverId).child("sender").setValue(curUserId)
-            myRef.child(receiverId).child("alert").setValue("1")
-            myRef.child(receiverId).child("reply").setValue("")
-            myRef.child(receiverId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
-            myRef.child(receiverId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
-            myRef.child(receiverId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
-            myRef.child(receiverId).child("location").setValue(if (location_cb.isChecked) "1" else "0")
+            usersDbRef.child(receiverId).child("message").setValue(msg)
+            usersDbRef.child(receiverId).child("sender").setValue(curUserId)
+            usersDbRef.child(receiverId).child("sendername").setValue(userName)
+            usersDbRef.child(receiverId).child("alert").setValue("1")
+            usersDbRef.child(receiverId).child("reply").setValue("")
+            usersDbRef.child(receiverId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
+            usersDbRef.child(receiverId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
+            usersDbRef.child(receiverId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
+            usersDbRef.child(receiverId).child("location").setValue(if (location_cb.isChecked) "1" else "0")
 
             Toast.makeText(this, "Message Sent!", Toast.LENGTH_SHORT).show()
             listenReceiver()
@@ -152,17 +155,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initialiseUserData() {
-        myRef.child(curUserId).child("alert").setValue("0")
-        myRef.child(curUserId).child("message").setValue("")
-        myRef.child(curUserId).child("opt1").setValue("YES")
-        myRef.child(curUserId).child("opt2").setValue("NO")
-        myRef.child(curUserId).child("received").setValue("0")
-        myRef.child(curUserId).child("reply").setValue("")
-        myRef.child(curUserId).child("sender").setValue("")
-        myRef.child(curUserId).child("sendername").setValue("")
+        var alert: String = ""
+        usersDbRef.child(curUserId).child("alert").get().addOnSuccessListener { alert = it.value.toString() }
+        if (alert == "0") {
+            usersDbRef.child(curUserId).child("message").setValue("")
+            usersDbRef.child(curUserId).child("opt1").setValue("YES")
+            usersDbRef.child(curUserId).child("opt2").setValue("NO")
+            usersDbRef.child(curUserId).child("received").setValue("0")
+            usersDbRef.child(curUserId).child("reply").setValue("")
+            usersDbRef.child(curUserId).child("sender").setValue("")
+            usersDbRef.child(curUserId).child("sendername").setValue("")
 
-        myRef.child(curUserId).child("call").setValue("0")
-        myRef.child(curUserId).child("location").setValue("0")
+            usersDbRef.child(curUserId).child("call").setValue("0")
+            usersDbRef.child(curUserId).child("location").setValue("0")
+        }
+        
+//        initialiseContacts()
+        
+    }
+
+    private fun initialiseContacts() {
+//        val contacts =
+        usersDbRef.child(curUserId).child("contacts").get().addOnSuccessListener {
+            val con = it.children
+            Log.d(TAG, "initialiseContacts: $con")
+            for (c in con)
+                Log.d(TAG, "initialiseContacts: $c "+c.key)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

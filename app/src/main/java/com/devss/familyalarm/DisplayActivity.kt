@@ -87,7 +87,7 @@ class DisplayActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 senderId = snapshot.child("sender").value.toString()
                     currentUserName = snapshot.child("name").value.toString()
-                    sender_tv.text = currentUserName
+                    sender_tv.text = snapshot.child("sendername").value.toString()
 
                 val msg = snapshot.child("message").getValue().toString()
 
