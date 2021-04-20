@@ -5,30 +5,29 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 
-class App : Application() {
+class ReplyNotification : Application() {
 
     companion object {
-        val SERVICE_CHANNEL_ID = "alarmServiceChannel"
+        val REPLY_CHANNEL_ID = "replyServiceChannel"
     }
 
     override fun onCreate() {
         super.onCreate()
 
-        createServiceNotificationChannel()
+        createReplyNotificationChannel()
     }
 
-    private fun createServiceNotificationChannel() {
+    // TODO: REPLY NOTIFICATION
+    private fun createReplyNotificationChannel() {
         if (versionIsAboveOreo()) run {
-            val serviceChannel = NotificationChannel(
-                SERVICE_CHANNEL_ID,
-                "Example Service Channel",
-                NotificationManager.IMPORTANCE_HIGH,
+            val replyChannel = NotificationChannel(
+                REPLY_CHANNEL_ID,
+                "Reply Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
             )
-            serviceChannel.setShowBadge(false)
-            serviceChannel.setSound(null, null)
 
             val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(serviceChannel)
+            notificationManager.createNotificationChannel(replyChannel)
         }
     }
 

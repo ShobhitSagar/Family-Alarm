@@ -7,8 +7,8 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.devss.familyalarm.App.Companion.REPLY_CHANNEL_ID
 import com.devss.familyalarm.App.Companion.SERVICE_CHANNEL_ID
+import com.devss.familyalarm.ReplyNotification.Companion.REPLY_CHANNEL_ID
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -64,6 +64,7 @@ class MyService : Service() {
             .setContentText("Family App is running in background.")
             .setSmallIcon(R.drawable.ic_android)
             .setContentIntent(pendingIntent)
+            .setSound(null)
             .build()
         startForeground(1, notification)
     }

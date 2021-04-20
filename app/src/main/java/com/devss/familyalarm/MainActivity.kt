@@ -1,12 +1,18 @@
 package com.devss.familyalarm
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import com.devss.familyalarm.ReplyNotification.Companion.REPLY_CHANNEL_ID
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -22,6 +28,7 @@ class MainActivity : AppCompatActivity() {
     private var reqFlag = false
     private lateinit var curUserId: String
     var receiverId = ""
+    private var senderName = ""
     private var pressedTime = 0L
     private var alertFlag = false
 
@@ -29,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var myRef: DatabaseReference
+    private lateinit var alertDbRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,9 +44,12 @@ class MainActivity : AppCompatActivity() {
 
         verifyCurrentUser()
         serviceIntent = Intent(this, MyService::class.java)
+        // Stop Service
+        stopService(serviceIntent)
 
         val database = Firebase.database
         myRef = database.getReference("users/")
+        alertDbRef = database.getReference("users/$curUserId/alert")
         initialiseUserData()
 
         myRef.child(curUserId).child("name").get().addOnSuccessListener {
@@ -55,8 +66,6 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) reqFlag = true else reqFlag = false
         }
 
-        // Service Starts
-        stopService(serviceIntent)
         displayAlert()
 
         send_btn.setOnClickListener {
@@ -133,12 +142,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displayAlert() {
-        myRef.child(curUserId).child("alert").addValueEventListener(object :
+        alertDbRef.addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val alert = snapshot.value.toString()
                 if (alert == "1") {
                     startActivity(Intent(applicationContext, DisplayActivity::class.java))
+                }
+                if (alert == "2") {
+                    var reply = ""
+                    myRef.child(curUserId).child("sendername").get().addOnSuccessListener {
+                        senderName = it.value.toString()
+                        myRef.child(curUserId).child("reply").get().addOnSuccessListener {
+                            reply = it.value.toString()
+                            showReplyNotification(reply)
+                        }
+                    }
                 }
             }
 
@@ -146,6 +165,33 @@ class MainActivity : AppCompatActivity() {
                 TODO("Not yet implemented")
             }
         })
+    }
+
+    private fun showReplyNotification(reply: String) {
+
+        var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_profile)
+            .setContentTitle(senderName)
+            .setContentText(reply)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "getString(R.string.channel_name)"
+            val descriptionText = "getString(R.string.channel_description)"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(REPLY_CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        with(NotificationManagerCompat.from(this)) {
+            notify(555, builder.build())
+        }
     }
 
     private fun initialiseUserData() {
@@ -214,23 +260,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onPause() {
-        super.onPause()
-        toastS("Paused!")
-    }
-
-    override fun onStart() {
-        super.onStart()
-        toastS("Started!")
-    }
-
     override fun onStop() {
         super.onStop()
-        toastS("Stopped!")
+        startService(serviceIntent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+
         startService(serviceIntent)
     }
 
