@@ -22,7 +22,6 @@ class DisplayActivity : AppCompatActivity() {
     private lateinit var currentUserId: String
     private var currentUserName = ""
     private var senderId = ""
-    private var pressedTime = 0L
 
     private lateinit var auth: FirebaseAuth
     private lateinit var myRef: DatabaseReference
@@ -46,11 +45,7 @@ class DisplayActivity : AppCompatActivity() {
         }
         reply_btn.setOnClickListener {
             val text = reply_et.text.trim().toString()
-            if (text.isNotEmpty() or text.isNotBlank()) sendReply(text) else Toast.makeText(
-                this,
-                "Enter a reply.",
-                Toast.LENGTH_SHORT
-            ).show()
+            if (text.isNotEmpty() or text.isNotBlank()) sendReply(text) else toastS("Enter a reply.")
         }
         call_btn.setOnClickListener { cancelAlert() }
         location_btn.setOnClickListener { cancelAlert() }
@@ -70,21 +65,17 @@ class DisplayActivity : AppCompatActivity() {
         myRef.child(senderId).child("reply").setValue(text)
         myRef.child(senderId).child("sender").setValue(currentUserId)
         myRef.child(senderId).child("sendername").setValue(currentUserName)
+        toastS("Replied")
         cancelAlert()
     }
 
     private fun displayAlert() {
         myRef.child(currentUserId).child("received").setValue("1")
-
-//        myRef.child(currentUserId).child("sender").get().addOnSuccessListener { senderId = it.value.toString() }
-//        myRef.child(senderId).child("name").get().addOnSuccessListener { sender_tv.text = it.value.toString() }
-//        myRef.child(currentUserId).child("message").get().addOnSuccessListener { message_tv.text = it.value.toString() }
-//        myRef.child(currentUserId).child("opt1").get().addOnSuccessListener { option1_btn.text = it.value.toString() }
-//        myRef.child(currentUserId).child("opt2").get().addOnSuccessListener { option2_btn.text = it.value.toString() }
-
+        Log.d(TAG, "displayAlert: ")
 
         myRef.child(currentUserId).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d(TAG, "onDataChange: ")
                 senderId = snapshot.child("sender").value.toString()
                 currentUserName = snapshot.child("name").value.toString()
                 sender_tv.text = currentUserName
@@ -106,11 +97,18 @@ class DisplayActivity : AppCompatActivity() {
                 Log.d(TAG, "Failed to read value.", error.toException())
             }
         })
+
+
+//        myRef.child(currentUserId).child("sender").get().addOnSuccessListener { senderId = it.value.toString() }
+//        myRef.child(senderId).child("name").get().addOnSuccessListener { sender_tv.text = it.value.toString() }
+//        myRef.child(currentUserId).child("message").get().addOnSuccessListener { message_tv.text = it.value.toString() }
+//        myRef.child(currentUserId).child("opt1").get().addOnSuccessListener { option1_btn.text = it.value.toString() }
+//        myRef.child(currentUserId).child("opt2").get().addOnSuccessListener { option2_btn.text = it.value.toString() }
     }
 
     private fun cancelAlert() {
-        resetUserData()
         finish()
+        resetUserData()
     }
 
     private fun resetUserData() {
@@ -125,7 +123,11 @@ class DisplayActivity : AppCompatActivity() {
 
     // TODO: Handle back pressed
     override fun onBackPressed() {
-        resetUserData()
         finish()
+        resetUserData()
+    }
+
+    fun toastS(string: String) {
+        Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
     }
 }

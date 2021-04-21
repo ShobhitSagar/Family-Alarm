@@ -3,15 +3,10 @@ package com.devss.familyalarm
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_profile.*
@@ -58,7 +53,7 @@ class ProfileActivity : AppCompatActivity() {
 //                }
 //
 //                override fun onCancelled(error: DatabaseError) {
-//                    TODO("Not yet implemented")
+//            toastS(error.message)
 //                }
 //            }
 //            dbRef.child("users").addValueEventListener(databaseListner)

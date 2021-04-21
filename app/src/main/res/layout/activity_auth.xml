@@ -35,16 +35,16 @@
                 android:textSize="16sp" />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="30dp"
                 android:layout_marginTop="12dp"
+                android:layout_gravity="center"
                 android:orientation="horizontal">
 
-                <EditText
-                    android:layout_width="0dp"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.2"
                     android:background="@null"
                     android:fontFamily="monospace"
                     android:hint="+"
@@ -53,14 +53,15 @@
 
                 <EditText
                     android:id="@+id/area_code_et"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:fontFamily="monospace"
                     android:imeOptions="actionNext"
                     android:inputType="number"
                     android:maxLength="3"
+                    android:maxLines="1"
                     android:paddingHorizontal="12dp"
+                    android:focusable="false"
                     android:text="91"
                     android:textAlignment="viewEnd" />
 
@@ -71,6 +72,7 @@
                     android:layout_weight="5"
                     android:fontFamily="monospace"
                     android:hint="phone number"
+                    android:maxLines="1"
                     android:imeOptions="actionDone"
                     android:inputType="number"
                     android:maxLength="10"

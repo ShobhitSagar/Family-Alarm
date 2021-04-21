@@ -2,6 +2,7 @@ package com.devss.familyalarm
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,219 +14,138 @@ import android.provider.ContactsContract
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.devss.familyalarm.ReplyNotification.Companion.REPLY_CHANNEL_ID
+import com.devss.familyalarm.App.Companion.REPLY_CHANNEL_ID
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
+
     private var reqFlag = false
-    private lateinit var curUserId: String
     var receiverId = ""
     private var senderName = ""
-    private lateinit var userAllContacts: ArrayList<String>
     private var pressedTime = 0L
-    private var alertFlag = false
     private val tempContacts = arrayOf("Shobhit", "Mahavir", "Vipul", "Shubham", "Rinku", "Sudo", "Sagar")
 
+    private lateinit var curUserId: String
+    private lateinit var userAllContacts: ArrayList<String>
     private lateinit var serviceIntent: Intent
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var myRef: DatabaseReference
+    private lateinit var rootUserDbRef: DatabaseReference
     private lateinit var alertDbRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-            userAllContacts = userContacts()
-
-            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, tempContacts)
-            id_actv.setAdapter(adapter)
-            Log.d(TAG, "onCreate: $userAllContacts")
-            Log.d(TAG, "onCreate: $tempContacts")
-        } else Toast.makeText(this, "Contact permission is not granted!", Toast.LENGTH_SHORT).show()
-
-
         verifyCurrentUser()
-        serviceIntent = Intent(this, MyService::class.java)
 
+        serviceIntent = Intent(this, MyService::class.java)
         // Stop Service
-        stopService(serviceIntent)
+        startService(serviceIntent)
 
         val database = Firebase.database
-        myRef = database.getReference("users/")
-        alertDbRef = database.getReference("users/$curUserId/alert")
+        rootUserDbRef = database.getReference("users/")
+        alertDbRef = database.getReference("users/$curUserId/alert/")
         initialiseUserData()
 
-        myRef.child(curUserId).child("name").get().addOnSuccessListener {
+        rootUserDbRef.child(curUserId).child("name").get().addOnSuccessListener {
             val userName = it.value.toString()
             title = userName
         }.addOnFailureListener {
-            title = appLabel()
+            title = applicationInfo.loadLabel(packageManager).toString()
         }
 
-        call_cb.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) reqFlag = true else reqFlag = false
-        }
-        location_cb.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) reqFlag = true else reqFlag = false
-        }
+        // TODO: CHANGING AS RECOMMENDED
+        call_cb.setOnCheckedChangeListener { _, isChecked -> reqFlag = if (isChecked) true else false }
+        location_cb.setOnCheckedChangeListener { _, isChecked -> reqFlag = if (isChecked) true else false }
 
-        displayAlert()
+//        listenReceiver()
+
+        message_et.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                val id = id_et.text.toString()
+                receiverId = if (id.isNotBlank()) id else "1"
+                sendAlert()
+                return@setOnEditorActionListener true
+            }
+            false
+        }
 
         send_btn.setOnClickListener {
             val id = id_et.text.toString()
-            receiverId = if (id.isNotBlank()) id else "1"
+            receiverId = if (id.isNotBlank()) id else "+919560258881"
             sendAlert()
         }
     }
-
-    private fun verifyCurrentUser() {
-        auth = FirebaseAuth.getInstance()
-        val currentUser = auth.currentUser
-
-        if (currentUser != null) {
-            curUserId = currentUser.phoneNumber.toString()
-        } else {
-            startActivity(Intent(this, AuthActivity::class.java))
-            finish()
-        }
-    }
-
-    private fun listenReceiver() {
-
-        myRef.child(receiverId).child("received").addValueEventListener(object :
-            ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val received = snapshot.value
-                if (received == "1") {
-                    Toast.makeText(applicationContext, "Message Delivered!", Toast.LENGTH_SHORT)
-                        .show()
-                    myRef.child(receiverId).child("received").setValue("0")
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-        })
-
-        myRef.child(curUserId).child("reply").addValueEventListener(object :
-            ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                temp_tv.text = snapshot.value.toString()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-        })
-    }
-
-    private fun appLabel(): String {
-        return applicationInfo.loadLabel(packageManager).toString()
-    }
-
-    fun sendAlert() {
+    
+    private fun sendAlert() {
         val msg = message_et.text.toString()
         val opt1 = opt1_et.text.toString()
         val opt2 = opt2_et.text.toString()
         if (reqFlag or msg.isNotEmpty()) {
-            myRef.child(receiverId).child("message").setValue(msg)
-            myRef.child(receiverId).child("sender").setValue(curUserId)
-            myRef.child(receiverId).child("alert").setValue("1")
-            myRef.child(receiverId).child("reply").setValue("")
-            myRef.child(receiverId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
-            myRef.child(receiverId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
-            myRef.child(receiverId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
-            myRef.child(receiverId).child("location").setValue(if (location_cb.isChecked) "1" else "0")
+            rootUserDbRef.child(receiverId).child("message").setValue(msg)
+            rootUserDbRef.child(receiverId).child("sender").setValue(curUserId)
+            rootUserDbRef.child(receiverId).child("sendername").setValue(title)
+            rootUserDbRef.child(receiverId).child("reply").setValue("")
+            rootUserDbRef.child(receiverId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
+            rootUserDbRef.child(receiverId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
+            rootUserDbRef.child(receiverId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
+            rootUserDbRef.child(receiverId).child("location")
+                .setValue(if (location_cb.isChecked) "1" else "0")
+            rootUserDbRef.child(receiverId).child("alert").setValue("1")
 
-            Toast.makeText(this, "Message Sent!", Toast.LENGTH_SHORT).show()
+            toastS("Message Sent!")
             listenReceiver()
         } else
-            Toast.makeText(this, "Please! Enter a message.", Toast.LENGTH_SHORT).show()
+            toastS("Please! Enter a message.")
     }
 
-    private fun displayAlert() {
-        alertDbRef.addValueEventListener(object :
+    private fun listenReceiver() {
+
+        rootUserDbRef.child(receiverId).child("received").addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val alert = snapshot.value.toString()
-                if (alert == "1") {
-                    startActivity(Intent(applicationContext, DisplayActivity::class.java))
-                }
-                if (alert == "2") {
-                    var reply = ""
-                    myRef.child(curUserId).child("sendername").get().addOnSuccessListener {
-                        senderName = it.value.toString()
-                        myRef.child(curUserId).child("reply").get().addOnSuccessListener {
-                            reply = it.value.toString()
-                            showReplyNotification(reply)
-                        }
-                    }
+                val received = snapshot.value
+                if (received == "1") {
+                    toastS("Alert Delivered!")
+//                    rootUserDbRef.child(receiverId).child("received").setValue("0")
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                toastS(error.message)
             }
         })
     }
 
-    private fun showReplyNotification(reply: String) {
-
-        var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_profile)
-            .setContentTitle(senderName)
-            .setContentText(reply)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "getString(R.string.channel_name)"
-            val descriptionText = "getString(R.string.channel_description)"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(REPLY_CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system
-            val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        with(NotificationManagerCompat.from(this)) {
-            notify(555, builder.build())
-        }
-    }
-
     private fun initialiseUserData() {
-        myRef.child(curUserId).child("alert").setValue("0")
-        myRef.child(curUserId).child("message").setValue("")
-        myRef.child(curUserId).child("opt1").setValue("YES")
-        myRef.child(curUserId).child("opt2").setValue("NO")
-        myRef.child(curUserId).child("received").setValue("0")
-        myRef.child(curUserId).child("reply").setValue("")
-        myRef.child(curUserId).child("sender").setValue("")
-        myRef.child(curUserId).child("sendername").setValue("")
+        var alert = ""
+        rootUserDbRef.child(curUserId).child("alert").get().addOnSuccessListener { alert = it.value.toString() }
+        if (alert == "0") {
+            rootUserDbRef.child(curUserId).child("message").setValue("")
+            rootUserDbRef.child(curUserId).child("opt1").setValue("YES")
+            rootUserDbRef.child(curUserId).child("opt2").setValue("NO")
+            rootUserDbRef.child(curUserId).child("received").setValue("0")
+            rootUserDbRef.child(curUserId).child("reply").setValue("")
+            rootUserDbRef.child(curUserId).child("sender").setValue("")
+            rootUserDbRef.child(curUserId).child("sendername").setValue("")
 
-        myRef.child(curUserId).child("call").setValue("0")
-        myRef.child(curUserId).child("location").setValue("0")
+            rootUserDbRef.child(curUserId).child("call").setValue("0")
+            rootUserDbRef.child(curUserId).child("location").setValue("0")
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -245,7 +165,7 @@ class MainActivity : AppCompatActivity() {
 
                 builder.setPositiveButton("Logout") { _, _ ->
                     auth.signOut()
-                    Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show()
+                    toastS("Logged out successfully!")
                     startActivity(Intent(this, AuthActivity::class.java))
                     finish()
                 }
@@ -285,23 +205,24 @@ class MainActivity : AppCompatActivity() {
         val cr: ContentResolver = contentResolver
         var cur: Cursor? = cr.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null)
 
-        if ((if(cur != null) cur.getCount() else 0) > 0) {
+        if ((if (cur != null) cur.getCount() else 0) > 0) {
             while (cur != null && cur.moveToNext()) {
                 val id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID))
                 cur.getColumnIndex(ContactsContract.Contacts._ID)
                 val name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
                 nameList.add(name)
                 if (cur.getInt(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
-                    var pCur: Cursor? = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                    var pCur: Cursor? = cr.query(
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                         null,
                         ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
                         arrayOf<String?>(id),
-//                        Array<String?>(){id},
                         null
                     )
                     if (pCur != null) {
                         while (pCur.moveToNext()) {
-                            val phoneNo = pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                            val phoneNo =
+                                pCur.getString(pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
                         }
                         pCur.close()
                     }
@@ -316,15 +237,28 @@ class MainActivity : AppCompatActivity() {
         return nameList
     }
 
-    override fun onStop() {
-        super.onStop()
-        startService(serviceIntent)
+    private fun loadUserContacts() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS ) == PackageManager.PERMISSION_GRANTED) {
+//            userAllContacts = userContacts()
+
+            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, tempContacts)
+            id_actv.setAdapter(adapter)
+//            Log.d(TAG, "onCreate: $userAllContacts")
+            Log.d(TAG, "onCreate: $tempContacts")
+        } else toastS("Contact permission is not granted!")
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun verifyCurrentUser() {
+        auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
 
-        startService(serviceIntent)
+        if (currentUser != null) {
+            curUserId = currentUser.phoneNumber.toString()
+            loadUserContacts()
+        } else {
+            startActivity(Intent(this, AuthActivity::class.java))
+            finish()
+        }
     }
 
     open fun toastS(string: String) {

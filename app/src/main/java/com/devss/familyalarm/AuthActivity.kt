@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseException
@@ -30,6 +31,14 @@ class AuthActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         handleCallBacks()
+
+        number_et.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                AuthenticateUser(v)
+                return@setOnEditorActionListener true
+            }
+            false
+        }
     }
 
     private fun handleCallBacks() {
@@ -80,7 +89,7 @@ class AuthActivity : AppCompatActivity() {
 
         if (areaCode.isNotEmpty() && phoneNumber.length == 10) {
             val phnNum = "+$areaCode$phoneNumber"
-            Toast.makeText(this, phnNum, Toast.LENGTH_SHORT).show()
+            Snackbar.make(view, "Please wait...", Snackbar.LENGTH_INDEFINITE).show()
             val options = PhoneAuthOptions.newBuilder(auth)
                 .setPhoneNumber(phnNum)
                 .setTimeout(60L, TimeUnit.SECONDS)

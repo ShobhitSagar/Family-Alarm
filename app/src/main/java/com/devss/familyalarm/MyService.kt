@@ -4,11 +4,12 @@ import android.app.*
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.devss.familyalarm.App.Companion.REPLY_CHANNEL_ID
 import com.devss.familyalarm.App.Companion.SERVICE_CHANNEL_ID
-import com.devss.familyalarm.ReplyNotification.Companion.REPLY_CHANNEL_ID
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -24,10 +25,13 @@ class MyService : Service() {
     private lateinit var currentUserId: String
     private var senderName: String = ""
     private lateinit var dbRef: DatabaseReference
+    private lateinit var alertDbRef: DatabaseReference
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         authenticateUser()
+
         dbRef = Firebase.database.reference.child("users").child(currentUserId)
+        alertDbRef = Firebase.database.getReference("users/$currentUserId/alert/")
 
         displayAlert()
         createNotification()
@@ -45,13 +49,13 @@ class MyService : Service() {
 
                 if (alert == "2") {
                     senderName = snapshot.child("sendername").value.toString()
-                    Toast.makeText(applicationContext, "Replied!", Toast.LENGTH_SHORT).show()
+//                    Toast.makeText(applicationContext, "Replied!", Toast.LENGTH_SHORT).show()
                     showReplyNotification(reply)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                toastS(error.message)
             }
         })
     }
@@ -85,46 +89,68 @@ class MyService : Service() {
         // TODO: WHY THIS FLAG
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-        dbRef.child("alert").addValueEventListener(object : ValueEventListener {
+        alertDbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val alert = snapshot.value
 
                 if (alert == "1") {
-                    createNotification()
+                    var message = ""
+                    dbRef.child("sendername").get().addOnSuccessListener {
+                        senderName = it.value.toString()
+                        dbRef.child("message").get().addOnSuccessListener {
+                            message = it.value.toString()
+                            showMessageNotification(message)
+                        }
+                    }
                     startActivity(intent)
                 }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                toastS(error.message)
             }
         })
     }
 
-    private fun showReplyNotification(reply: String) {
+    private fun showMessageNotification(message: String) {
+        val notificationIntent = Intent(this, DisplayActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
         var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_profile)
+            .setSmallIcon(R.drawable.ic_logout)
+            .setContentTitle(senderName)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(565, builder.build())
+
+        }
+    }
+
+    private fun showReplyNotification(reply: String) {
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+
+        var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_logout)
             .setContentTitle(senderName)
             .setContentText(reply)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val name = "getString(R.string.channel_name)"
-                val descriptionText = "getString(R.string.channel_description)"
-                val importance = NotificationManager.IMPORTANCE_DEFAULT
-                val channel = NotificationChannel(REPLY_CHANNEL_ID, name, importance).apply {
-                    description = descriptionText
-                }
-                // Register the channel with the system
-                val notificationManager: NotificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-                notificationManager.createNotificationChannel(channel)
-            }
-
         with(NotificationManagerCompat.from(this)) {
-            notify(555, builder.build())
+            notify(565, builder.build())
+
+//            dbRef.child("alert").setValue("0")
         }
+    }
+
+    fun toastS(string: String) {
+        Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
     }
 }

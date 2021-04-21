@@ -4,7 +4,9 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.PhoneAuthCredential
@@ -24,15 +26,24 @@ class VerifyCodeActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         storedVerificationId = intent.getStringExtra("storedVerificationId").toString()
 
+        code_et.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                verifyCode(v)
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+
     }
 
     fun verifyCode(view: View) {
 
         val otp = code_et.text.toString().trim()
         if (otp.isNotEmpty()) {
+            Snackbar.make(view, "Please wait...", Snackbar.LENGTH_INDEFINITE).show()
             val credential: PhoneAuthCredential = PhoneAuthProvider.getCredential(storedVerificationId, otp)
             signInWithPhoneAuthCredential(credential)
-        } else Toast.makeText(applicationContext, "Enter OTP", Toast.LENGTH_SHORT).show()
+        } else toastS("Enter OTP")
     }
 
     private fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential) {
@@ -42,10 +53,14 @@ class VerifyCodeActivity : AppCompatActivity() {
                 finish()
             } else {
                 if (task.exception is FirebaseAuthInvalidCredentialsException) {
-                    Toast.makeText(this, "Invalid OTP.", Toast.LENGTH_SHORT).show()
+                    toastS("Invalid OTP.")
                 }
             }
         }
 
+    }
+
+    open fun toastS(string: String) {
+        Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
     }
 }
