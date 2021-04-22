@@ -9,7 +9,8 @@ class App : Application() {
 
     companion object {
         const val SERVICE_CHANNEL_ID = "alarmServiceChannel"
-        const val REPLY_CHANNEL_ID = "replyServiceChannel"
+        const val REPLY_CHANNEL_ID = "replyNotificationChannel"
+        const val MESSAGE_CHANNEL_ID = "messageNotificationChannel"
     }
 
     override fun onCreate() {
@@ -17,6 +18,7 @@ class App : Application() {
 
         createServiceNotificationChannel()
         createReplyNotificationChannel()
+        createMessageNotificationChannel()
     }
 
     // TODO: REPLY NOTIFICATION
@@ -24,8 +26,21 @@ class App : Application() {
         if (versionIsAboveOreo()) run {
             val replyChannel = NotificationChannel(
                 REPLY_CHANNEL_ID,
-                "Reply Service Channel",
-                NotificationManager.IMPORTANCE_DEFAULT
+                "Reply",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(replyChannel)
+        }
+    }
+
+    private fun createMessageNotificationChannel() {
+        if (versionIsAboveOreo()) run {
+            val replyChannel = NotificationChannel(
+                MESSAGE_CHANNEL_ID,
+                "Message",
+                NotificationManager.IMPORTANCE_HIGH
             )
 
             val notificationManager = getSystemService(NotificationManager::class.java)
@@ -37,8 +52,8 @@ class App : Application() {
         if (versionIsAboveOreo()) run {
             val serviceChannel = NotificationChannel(
                 SERVICE_CHANNEL_ID,
-                "Example Service Channel",
-                NotificationManager.IMPORTANCE_LOW,
+                "App running in background",
+                NotificationManager.IMPORTANCE_HIGH,
             )
             serviceChannel.setShowBadge(false)
             serviceChannel.setSound(null, null)

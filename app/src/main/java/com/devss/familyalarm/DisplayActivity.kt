@@ -71,6 +71,7 @@ class DisplayActivity : AppCompatActivity() {
 
     private fun displayAlert() {
         myRef.child(currentUserId).child("received").setValue("1")
+        myRef.child(currentUserId).child("alert").setValue("5")
         Log.d(TAG, "displayAlert: ")
 
         myRef.child(currentUserId).addValueEventListener(object : ValueEventListener {

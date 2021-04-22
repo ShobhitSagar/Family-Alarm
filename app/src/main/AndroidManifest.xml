@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:name=".App"
@@ -14,14 +16,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FamilyAlarm">
+        <activity android:name=".ContactActivity"></activity>
         <activity android:name=".SettingActivity" />
         <activity
             android:name=".ProfileActivity"
             android:label="Profile" />
-        <activity
-            android:name=".VerifyCodeActivity" />
-        <activity
-            android:name=".AuthActivity">
+        <activity android:name=".VerifyCodeActivity" />
+        <activity android:name=".AuthActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -1,5 +1,7 @@
 package com.devss.familyalarm
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -7,10 +9,13 @@ import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.ContactsContract
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -51,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         verifyCurrentUser()
+        checkBatteryOptimizations()
 
         serviceIntent = Intent(this, MyService::class.java)
         // Stop Service
@@ -68,9 +74,8 @@ class MainActivity : AppCompatActivity() {
             title = applicationInfo.loadLabel(packageManager).toString()
         }
 
-        // TODO: CHANGING AS RECOMMENDED
-        call_cb.setOnCheckedChangeListener { _, isChecked -> reqFlag = if (isChecked) true else false }
-        location_cb.setOnCheckedChangeListener { _, isChecked -> reqFlag = if (isChecked) true else false }
+        call_cb.setOnCheckedChangeListener { _, isChecked -> reqFlag = isChecked }
+        location_cb.setOnCheckedChangeListener { _, isChecked -> reqFlag = isChecked }
 
 //        listenReceiver()
 
@@ -90,7 +95,20 @@ class MainActivity : AppCompatActivity() {
             sendAlert()
         }
     }
-    
+
+    @SuppressLint("BatteryLife")
+    private fun checkBatteryOptimizations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val intent = Intent()
+            val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        }
+    }
+
     private fun sendAlert() {
         val msg = message_et.text.toString()
         val opt1 = opt1_et.text.toString()
@@ -103,8 +121,7 @@ class MainActivity : AppCompatActivity() {
             rootUserDbRef.child(receiverId).child("opt1").setValue(if (opt1.isNotEmpty()) opt1 else "YES")
             rootUserDbRef.child(receiverId).child("opt2").setValue(if (opt2.isNotEmpty()) opt2 else "NO")
             rootUserDbRef.child(receiverId).child("call").setValue(if (call_cb.isChecked) "1" else "0")
-            rootUserDbRef.child(receiverId).child("location")
-                .setValue(if (location_cb.isChecked) "1" else "0")
+            rootUserDbRef.child(receiverId).child("location").setValue(if (location_cb.isChecked) "1" else "0")
             rootUserDbRef.child(receiverId).child("alert").setValue("1")
 
             toastS("Message Sent!")
@@ -169,9 +186,9 @@ class MainActivity : AppCompatActivity() {
                     startActivity(Intent(this, AuthActivity::class.java))
                     finish()
                 }
-                builder.setNegativeButton("Cancel") { _, _ ->
-
-                }
+//                builder.setNegativeButton("Cancel") { _, _ ->
+//
+//                }
 
                 val alertDialog: AlertDialog = builder.create()
                 alertDialog.show()
@@ -245,7 +262,10 @@ class MainActivity : AppCompatActivity() {
             id_actv.setAdapter(adapter)
 //            Log.d(TAG, "onCreate: $userAllContacts")
             Log.d(TAG, "onCreate: $tempContacts")
-        } else toastS("Contact permission is not granted!")
+        } else {
+            toastS("Contact permission is not granted!")
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_CONTACTS), 9)
+        }
     }
 
     private fun verifyCurrentUser() {

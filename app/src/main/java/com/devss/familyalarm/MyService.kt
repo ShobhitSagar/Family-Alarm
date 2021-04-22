@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.devss.familyalarm.App.Companion.MESSAGE_CHANNEL_ID
 import com.devss.familyalarm.App.Companion.REPLY_CHANNEL_ID
 import com.devss.familyalarm.App.Companion.SERVICE_CHANNEL_ID
 import com.google.firebase.auth.FirebaseAuth
@@ -34,13 +35,13 @@ class MyService : Service() {
         alertDbRef = Firebase.database.getReference("users/$currentUserId/alert/")
 
         displayAlert()
-        createNotification()
+        createServiceNotification()
 
-        showNotification()
+        listenReply()
         return START_STICKY
     }
 
-    private fun showNotification() {
+    private fun listenReply() {
 
         dbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -60,13 +61,13 @@ class MyService : Service() {
         })
     }
 
-    private fun createNotification() {
+    private fun createServiceNotification() {
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
         val notification: Notification? = NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
             .setContentText("Family App is running in background.")
-            .setSmallIcon(R.drawable.ic_android)
+            .setSmallIcon(R.drawable.ic_alarm)
             .setContentIntent(pendingIntent)
             .setSound(null)
             .build()
@@ -102,7 +103,7 @@ class MyService : Service() {
                             showMessageNotification(message)
                         }
                     }
-                    startActivity(intent)
+//                    startActivity(intent)
                 }
             }
 
@@ -116,17 +117,20 @@ class MyService : Service() {
         val notificationIntent = Intent(this, DisplayActivity::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
-        var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_logout)
+        var builder = NotificationCompat.Builder(this, MESSAGE_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_message)
             .setContentTitle(senderName)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
+            .setFullScreenIntent(pendingIntent, true)
+            // TODO: Viberate
+            // .setVibrate()
             .setAutoCancel(true)
 
         with(NotificationManagerCompat.from(this)) {
             // notificationId is a unique int for each notification that you must define
-            notify(565, builder.build())
+            notify(5, builder.build())
 
         }
     }
@@ -136,7 +140,7 @@ class MyService : Service() {
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
         var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_logout)
+            .setSmallIcon(R.drawable.ic_reply)
             .setContentTitle(senderName)
             .setContentText(reply)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -144,9 +148,9 @@ class MyService : Service() {
             .setAutoCancel(true)
 
         with(NotificationManagerCompat.from(this)) {
-            notify(565, builder.build())
+            notify(4, builder.build())
 
-//            dbRef.child("alert").setValue("0")
+            dbRef.child("alert").setValue("0")
         }
     }
 
