@@ -12,26 +12,13 @@
         android:id="@+id/id_actv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Contact"
+        android:hint="Select Contact"
         android:textSize="20sp"
         android:imeOptions="actionNext"
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-    <EditText
-        android:id="@+id/id_et"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter ID"
-        android:text="+919560258881"
-        android:imeOptions="actionNext"
-        android:inputType="text"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/id_actv" />
 
     <TextView
         android:id="@+id/enter_msg_tv"
@@ -41,7 +28,7 @@
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/id_et" />
+        app:layout_constraintTop_toBottomOf="@+id/id_actv" />
 
     <EditText
         android:id="@+id/message_et"

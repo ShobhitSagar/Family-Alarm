@@ -11,6 +11,8 @@ class App : Application() {
         const val SERVICE_CHANNEL_ID = "alarmServiceChannel"
         const val REPLY_CHANNEL_ID = "replyNotificationChannel"
         const val MESSAGE_CHANNEL_ID = "messageNotificationChannel"
+        const val MESSAGE_NOTIFICATION_ID = 5
+        const val REPLY_NOTIFICATION_ID = 6
     }
 
     override fun onCreate() {
@@ -53,7 +55,7 @@ class App : Application() {
             val serviceChannel = NotificationChannel(
                 SERVICE_CHANNEL_ID,
                 "App running in background",
-                NotificationManager.IMPORTANCE_HIGH,
+                NotificationManager.IMPORTANCE_LOW,
             )
             serviceChannel.setShowBadge(false)
             serviceChannel.setSound(null, null)

@@ -2,37 +2,34 @@ package com.devss.familyalarm
 
 import android.app.*
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.devss.familyalarm.App.Companion.MESSAGE_CHANNEL_ID
+import com.devss.familyalarm.App.Companion.MESSAGE_NOTIFICATION_ID
 import com.devss.familyalarm.App.Companion.REPLY_CHANNEL_ID
+import com.devss.familyalarm.App.Companion.REPLY_NOTIFICATION_ID
 import com.devss.familyalarm.App.Companion.SERVICE_CHANNEL_ID
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
-class MyService : Service() {
+class MainService : Service() {
 
-    private val TAG = "MyService"
+    private val TAG = "MainService"
     private lateinit var auth: FirebaseAuth
     private lateinit var currentUserId: String
-    private var senderName: String = ""
-    private lateinit var dbRef: DatabaseReference
+//    var msgNotificationId: Int = 5
+    private lateinit var currentUserDbRef: DatabaseReference
     private lateinit var alertDbRef: DatabaseReference
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         authenticateUser()
 
-        dbRef = Firebase.database.reference.child("users").child(currentUserId)
-        alertDbRef = Firebase.database.getReference("users/$currentUserId/alert/")
+        currentUserDbRef = Firebase.database.reference.child("users2/$currentUserId/")
+        alertDbRef = Firebase.database.getReference("users2/$currentUserId/alerts/")
 
         displayAlert()
         createServiceNotification()
@@ -43,15 +40,16 @@ class MyService : Service() {
 
     private fun listenReply() {
 
-        dbRef.addValueEventListener(object : ValueEventListener {
+        currentUserDbRef.child("contacts").addValueEventListener(object :
+            ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val alert = snapshot.child("alert").value.toString()
-                val reply = snapshot.child("reply").value.toString()
 
-                if (alert == "2") {
-                    senderName = snapshot.child("sendername").value.toString()
-//                    Toast.makeText(applicationContext, "Replied!", Toast.LENGTH_SHORT).show()
-                    showReplyNotification(reply)
+                snapshot.children.forEach {
+                    val reply = it.child("reply").value.toString()
+                    if (it.child("reply").exists()) {
+                        val senderName = it.child("name").value.toString()
+                        showReplyNotification(senderName, reply)
+                    }
                 }
             }
 
@@ -66,8 +64,8 @@ class MyService : Service() {
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
         val notification: Notification? = NotificationCompat.Builder(this, SERVICE_CHANNEL_ID)
-            .setContentText("Family App is running in background.")
-            .setSmallIcon(R.drawable.ic_alarm)
+            .setContentText("Running in background.")
+            .setSmallIcon(R.drawable.ic_alert)
             .setContentIntent(pendingIntent)
             .setSound(null)
             .build()
@@ -84,36 +82,44 @@ class MyService : Service() {
     }
 
     private fun displayAlert() {
-
         val intent = Intent(this, DisplayActivity::class.java)
-
         // TODO: WHY THIS FLAG
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-        alertDbRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val alert = snapshot.value
+        alertDbRef.addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
 
-                if (alert == "1") {
-                    var message = ""
-                    dbRef.child("sendername").get().addOnSuccessListener {
-                        senderName = it.value.toString()
-                        dbRef.child("message").get().addOnSuccessListener {
-                            message = it.value.toString()
-                            showMessageNotification(message)
+                if (snapshot.exists()) {
+                    alertDbRef.child(snapshot.key.toString()).child("sendername").get()
+                        .addOnSuccessListener {
+                            val senderName = it.value.toString()
+                            alertDbRef.child(snapshot.key.toString()).child("message").get()
+                                .addOnSuccessListener {
+                                    val message = it.value.toString()
+//                                    msgNotificationId = (System.currentTimeMillis() / 1000).toInt()
+                                    showMessageNotification(senderName, message)
+                                }
                         }
-                    }
-//                    startActivity(intent)
-                }
+                } else toastS("No Data Found!")
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {  }
+
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                toastS(error.message)
             }
+
         })
+
     }
 
-    private fun showMessageNotification(message: String) {
+    private fun showMessageNotification(senderName: String, message: String) {
         val notificationIntent = Intent(this, DisplayActivity::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 
@@ -127,30 +133,34 @@ class MyService : Service() {
             // TODO: Viberate
             // .setVibrate()
             .setAutoCancel(true)
+            .addAction(R.drawable.ic_reply, "REPLY", pendingIntent)
 
         with(NotificationManagerCompat.from(this)) {
             // notificationId is a unique int for each notification that you must define
-            notify(5, builder.build())
+            notify(MESSAGE_NOTIFICATION_ID, builder.build())
 
         }
     }
 
-    private fun showReplyNotification(reply: String) {
+    private fun showReplyNotification(senderName: String, reply: String) {
         val notificationIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+        val pendingNotificationIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
+
+        val deleteIntent = Intent(this, MyBroadcastReceiver::class.java)
+        deleteIntent.setAction("delete_reply")
+        val deletePendingIntent: PendingIntent = PendingIntent.getBroadcast(this, 0, deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT)
 
         var builder = NotificationCompat.Builder(this, REPLY_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_reply)
             .setContentTitle(senderName)
+            .setSmallIcon(R.drawable.ic_reply)
             .setContentText(reply)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(pendingNotificationIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setDeleteIntent(deletePendingIntent)
 
         with(NotificationManagerCompat.from(this)) {
-            notify(4, builder.build())
-
-            dbRef.child("alert").setValue("0")
+            notify(REPLY_NOTIFICATION_ID, builder.build())
         }
     }
 

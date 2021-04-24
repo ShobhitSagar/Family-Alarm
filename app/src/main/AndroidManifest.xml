@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".App"
@@ -16,7 +18,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FamilyAlarm">
-        <activity android:name=".ContactActivity"></activity>
+
+        <receiver android:name=".MyBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"/>
+
+        <activity android:name=".ContactActivity" />
         <activity android:name=".SettingActivity" />
         <activity
             android:name=".ProfileActivity"
@@ -32,7 +39,7 @@
         <activity android:name=".DisplayActivity" />
         <activity android:name=".MainActivity" />
 
-        <service android:name=".MyService" />
+        <service android:name=".MainService" />
     </application>
 
 </manifest>

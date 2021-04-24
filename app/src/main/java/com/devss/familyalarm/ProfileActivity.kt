@@ -32,31 +32,11 @@ class ProfileActivity : AppCompatActivity() {
         
         if (userName.isNotBlank()) {
 
-            dbRef.child("users").child(currentUserId).child("name").setValue(userName)
+            dbRef.child("users2").child(currentUserId).child("profile").child("name").setValue(userName)
             intent = Intent(this, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
             finish()
-
-//            val databaseListner = object : ValueEventListener {
-//                override fun onDataChange(snapshot: DataSnapshot) {
-//                    for (user in snapshot.children) {
-//                        val oldUserId = user.key
-//                        if (currentUserId == oldUserId) {
-//                            name_et.text = snapshot.child(currentUserId).child("name").value
-//                            Log.d(TAG, "Current User: $oldUserId")
-//                        }
-//                        else {
-//
-//                        }
-//                    }
-//                }
-//
-//                override fun onCancelled(error: DatabaseError) {
-//            toastS(error.message)
-//                }
-//            }
-//            dbRef.child("users").addValueEventListener(databaseListner)
 
         } else Snackbar.make(view, "Please enter a name.", Snackbar.LENGTH_SHORT).show()
 
