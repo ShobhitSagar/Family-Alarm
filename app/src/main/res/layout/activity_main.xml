@@ -10,15 +10,26 @@
 
     <AutoCompleteTextView
         android:id="@+id/id_actv"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Select Contact"
         android:textSize="20sp"
         android:imeOptions="actionNext"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:inputType="textCapWords"
+        app:layout_constraintEnd_toStartOf="@+id/add_contact_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
+        android:id="@+id/add_contact_btn"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        app:icon="@drawable/ic_add_person"
+        android:onClick="contacts"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/id_actv"/>
 
     <TextView
         android:id="@+id/enter_msg_tv"
@@ -37,7 +48,7 @@
         android:hint="Message"
         android:imeOptions="actionSend"
         android:maxLines="1"
-        android:inputType="text"
+        android:inputType="textCapSentences"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/enter_msg_tv" />
@@ -59,7 +70,7 @@
         android:layout_height="wrap_content"
         android:hint="YES"
         android:imeOptions="actionNext"
-        android:inputType="text"
+        android:inputType="textCapSentences"
         android:maxLines="1"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,7 +83,7 @@
         android:layout_height="wrap_content"
         android:hint="NO"
         android:imeOptions="actionDone"
-        android:inputType="text"
+        android:inputType="textCapSentences"
         android:maxLines="1"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -122,6 +133,9 @@
         android:id="@+id/send_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        app:icon="@drawable/ic_send"
+        app:iconGravity="textStart"
         android:text="Send"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

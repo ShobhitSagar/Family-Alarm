@@ -1,5 +1,6 @@
 package com.devss.familyalarm
 
+import android.app.NotificationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -40,17 +41,16 @@ class DisplayActivity : AppCompatActivity() {
         rootUsersDbRef = database.getReference("users2/")
         alertsDbRef = database.getReference("users2/$currentUserId/alerts/")
 
-        rootUsersDbRef.child(currentUserId).child("profile").child("name").get().addOnSuccessListener { senderName = it.value.toString() }
+        rootUsersDbRef.child(currentUserId).child("profile").child("name").get()
+            .addOnSuccessListener { senderName = it.value.toString() }
 
         alertsDbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) displayAlert() else finish()
             }
-
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
-
         })
 
         option1_btn.setOnClickListener {
@@ -71,7 +71,8 @@ class DisplayActivity : AppCompatActivity() {
     }
 
     private fun sendReply(text: String) {
-        rootUsersDbRef.child(senderId).child("contacts").child(currentUserId).child("reply").setValue(text)
+        rootUsersDbRef.child(senderId).child("contacts").child(currentUserId).child("reply")
+            .setValue(text)
         cancelAlert()
 //        rootUsersDbRef.child(senderId).child("replies").child(currentUserId).child("name").setValue(senderName)
     }
@@ -83,7 +84,11 @@ class DisplayActivity : AppCompatActivity() {
 
                     senderId = it.child("sender").value.toString()
                     senderName = it.child("sendername").value.toString()
-                    title = if (senderName.isNotBlank()) senderName else applicationInfo.loadLabel(packageManager).toString()
+                    title = if (senderName.isNotBlank()) senderName else applicationInfo.loadLabel(
+                        packageManager
+                    ).toString()
+
+                    if (senderId.isNotBlank() && senderId != "null") alertDelivered(senderId)
 
                     val msg = it.child("message").value.toString()
                     if (msg.isNotEmpty()) {
@@ -91,11 +96,14 @@ class DisplayActivity : AppCompatActivity() {
                         option1_btn.text = it.child("opt1").value.toString()
                         option2_btn.text = it.child("opt2").value.toString()
                     } else message_layout.visibility = View.GONE
-                    if (it.child("call").value.toString() == "1") call_btn.visibility =
-                        View.VISIBLE
-                    if (it.child("location").value.toString() == "1") location_btn.visibility =
-                        View.VISIBLE
-
+                    if (it.child("call").value.toString() == "1") {
+                        request_ll.visibility = View.VISIBLE
+                        call_btn.visibility = View.VISIBLE
+                    }
+                    if (it.child("location").value.toString() == "1") {
+                        request_ll.visibility = View.VISIBLE
+                        location_btn.visibility = View.VISIBLE
+                    }
                 }
             }
 
@@ -103,6 +111,14 @@ class DisplayActivity : AppCompatActivity() {
                 TODO("Not yet implemented")
             }
         })
+
+        handleAlertDelivery()
+    }
+
+    private fun alertDelivered(senderId: String) {
+        rootUsersDbRef.child(senderId).child("contacts").child(currentUserId)
+            .child("delivered")
+            .setValue("1")
     }
 
     private fun verifyCurrentUser() {
@@ -112,19 +128,20 @@ class DisplayActivity : AppCompatActivity() {
     }
 
     private fun cancelAlert() {
-        finish()
+        rootUsersDbRef.child(senderId).child("contacts").child(currentUserId)
+            .child("delivered")
+            .removeValue()
         alertsDbRef.child(senderId).removeValue()
-//        resetUserData()
+        finish()
     }
 
-    private fun resetUserData() {
-        alertsDbRef.child(senderId).child("alert").setValue("0")
-        alertsDbRef.child(senderId).child("message").setValue("")
-        alertsDbRef.child(senderId).child("opt1").setValue("YES")
-        alertsDbRef.child(senderId).child("opt2").setValue("NO")
-
-        alertsDbRef.child(senderId).child("call").setValue("0")
-        alertsDbRef.child(senderId).child("location").setValue("0")
+    private fun handleAlertDelivery() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.cancel(App.MESSAGE_NOTIFICATION_ID)
+        } else {
+            TODO("VERSION.SDK_INT < M")
+        }
     }
 
     // TODO: Handle back pressed

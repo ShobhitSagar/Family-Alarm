@@ -3,6 +3,7 @@ package com.devss.familyalarm
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -14,6 +15,8 @@ import kotlinx.android.synthetic.main.activity_profile.*
 class ProfileActivity : AppCompatActivity() {
     private val TAG = "ProfileActivity"
     
+    private lateinit var currentUserId: String
+
     private lateinit var auth: FirebaseAuth
     private lateinit var dbRef: DatabaseReference
 
@@ -21,13 +24,22 @@ class ProfileActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
+        authenticateUser()
         dbRef = Firebase.database.reference
+
+        dbRef.child("users2").child(currentUserId).child("profile")
+            .child("name").get().addOnSuccessListener {
+                name_et.setText(it.value.toString())
+            }
+    }
+
+    private fun authenticateUser() {
+        auth = FirebaseAuth.getInstance()
+        currentUserId = auth.currentUser.phoneNumber
     }
 
     fun save_name_btn(view: View) {
-        auth = FirebaseAuth.getInstance()
-        val currentUserId = auth.currentUser.phoneNumber
-        
+
         val userName = name_et.text.toString().trim()
         
         if (userName.isNotBlank()) {

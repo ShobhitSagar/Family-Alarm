@@ -17,6 +17,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         verifyCurrentUser()
+        cancelNotifications()
         checkBatteryOptimizations()
 
         serviceIntent = Intent(this, MainService::class.java)
@@ -60,10 +62,13 @@ class MainActivity : AppCompatActivity() {
 
         loadContacts()
 
-        rootUserDbRef.child(currentUserID).child("profile").child("name").get().addOnSuccessListener {
-            val userName = it.value.toString()
-            title = if (userName.isNotBlank()) userName else applicationInfo.loadLabel(packageManager).toString()
-        }.addOnFailureListener {
+        rootUserDbRef.child(currentUserID).child("profile").child("name").get()
+            .addOnSuccessListener {
+                val userName = it.value.toString()
+                title = if (userName.isNotBlank()) userName else applicationInfo.loadLabel(
+                    packageManager
+                ).toString()
+            }.addOnFailureListener {
             title = applicationInfo.loadLabel(packageManager).toString()
         }
 
@@ -72,11 +77,13 @@ class MainActivity : AppCompatActivity() {
 
 //        listenReceiver()
 
-        message_et.setOnEditorActionListener { _, actionId, _ ->
+        message_et.setOnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
                 val id = id_actv.text.toString()
-                receiverId = if (id.isNotBlank()) id else "1"
-                sendAlert()
+                if (id.isNotBlank()) {
+                    receiverId = hashMap?.getValue(id)
+                    sendAlert()
+                } else Snackbar.make(v, "Select a contact", Snackbar.LENGTH_SHORT).show()
                 return@setOnEditorActionListener true
             }
             false
@@ -84,36 +91,68 @@ class MainActivity : AppCompatActivity() {
 
         send_btn.setOnClickListener {
             val id = id_actv.text.toString()
-//            receiverId = if (id.isNotBlank()) id else "+919560258881"
-            receiverId = hashMap.getValue(id)
-            Log.d(TAG, "onCreate: $receiverId")
-            sendAlert()
+            if (id.isNotBlank()) {
+                receiverId = hashMap.getValue(id)
+                sendAlert()
+            } else Snackbar.make(root_layout, "Select a contact", Snackbar.LENGTH_SHORT).show()
         }
-
-        cancelNotifications()
     }
 
     private fun loadContacts() {
         hashMap = LinkedHashMap<String, String>()
 
-        val snackbar: Snackbar = Snackbar.make(root_layout, "Please wait...", Snackbar.LENGTH_INDEFINITE)
+        val snackbar: Snackbar =
+            Snackbar.make(root_layout, "Please wait...", Snackbar.LENGTH_INDEFINITE)
         snackbar.show()
         val contactAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
-        contactDbRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                snapshot.children.forEach {
-                    val name = it.child("name").value.toString()
-                    val number = it.key.toString()
-                    hashMap.put(name, number)
-                    contactAdapter.add(name)
-                }
-                snackbar.dismiss()
-            }
+//        contactDbRef.addValueEventListener(object : ValueEventListener {
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                snapshot.children.forEach {
+//                    val name = it.child("name").value.toString()
+//                    val number = it.key.toString()
+//                    hashMap.put(name, number)
+//                    contactAdapter.add(name)
+//                }
+//                snackbar.dismiss()
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//        })
 
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+        contactDbRef.get().addOnSuccessListener {
+            it.children.forEach {
+                val number = it.key.toString()
+                val name = it.child("name").value.toString()
+                hashMap.put(name, number)
+                contactAdapter.add(name)
+
             }
-        })
+            snackbar.dismiss()
+        }
+
+//        contactDbRef.addChildEventListener(object : ChildEventListener {
+//            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+//                TODO("Not yet implemented")
+//            }
+//
+//            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+//                TODO("Not yet implemented")
+//            }
+//
+//            override fun onChildRemoved(snapshot: DataSnapshot) {
+//                TODO("Not yet implemented")
+//            }
+//
+//            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+//                TODO("Not yet implemented")
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                TODO("Not yet implemented")
+//            }
+//        })
 
         id_actv.setAdapter(contactAdapter)
     }
@@ -121,7 +160,7 @@ class MainActivity : AppCompatActivity() {
     private fun cancelNotifications() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.cancel(5)
+            notificationManager.cancelAll()
         } else {
             TODO("VERSION.SDK_INT < M")
         }
@@ -151,8 +190,6 @@ class MainActivity : AppCompatActivity() {
             receiverAlertsDbRef.child(currentUserID).child("message").setValue(message)
             receiverAlertsDbRef.child(currentUserID).child("sender").setValue(currentUserID)
             receiverAlertsDbRef.child(currentUserID).child("sendername").setValue(title)
-            receiverAlertsDbRef.child(currentUserID).child("reply").setValue("")
-            receiverAlertsDbRef.child(currentUserID).child("received").setValue("0")
             receiverAlertsDbRef.child(currentUserID).child("opt1")
                 .setValue(if (opt1.isNotBlank()) opt1 else "YES")
             receiverAlertsDbRef.child(currentUserID).child("opt2")
@@ -161,9 +198,10 @@ class MainActivity : AppCompatActivity() {
                 .setValue(if (call_cb.isChecked) "1" else "0")
             receiverAlertsDbRef.child(currentUserID).child("location")
                 .setValue(if (location_cb.isChecked) "1" else "0")
-            receiverAlertsDbRef.child(currentUserID).child("alert").setValue("1")
+//            receiverAlertsDbRef.child(currentUserID).child("alert").setValue("1")
 
             toastS("Message Sent!")
+            initialiseUI()
             listenReceiver()
         } else
             toastS("Please! Enter a message.")
@@ -171,13 +209,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun listenReceiver() {
 
-        receiverAlertsDbRef.child(currentUserID).child("received").addValueEventListener(object :
+        contactDbRef.child(receiverId).child("delivered").addValueEventListener(object :
             ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val received = snapshot.value
-                if (received == "1") {
-                    toastS("Alert Delivered!")
-//                    receiverAlertsDbRef.child(currentUserID).child("received").setValue("0")
+                if (snapshot.exists()) {
+                    toastS("Alert delivered")
                 }
             }
 
@@ -187,8 +223,8 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun initialiseUserData() {
-        rootUserDbRef.child(currentUserID).child("profile").child("name").setValue("")
+    private fun initialiseUI() {
+        message_et.setText("")
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -212,9 +248,6 @@ class MainActivity : AppCompatActivity() {
                     startActivity(Intent(this, AuthActivity::class.java))
                     finish()
                 }
-//                builder.setNegativeButton("Cancel") { _, _ ->
-//
-//                }
 
                 val alertDialog: AlertDialog = builder.create()
                 alertDialog.show()
@@ -224,9 +257,6 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.settings -> {
                 startActivity(Intent(this, SettingActivity::class.java))
-            }
-            R.id.contacts -> {
-                startActivity(Intent(this, ContactActivity::class.java))
             }
         }
 
@@ -243,7 +273,6 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(root_layout, "Press back again to exit!", Snackbar.LENGTH_SHORT).show()
         }
         pressedTime = System.currentTimeMillis()
-
     }
 
     private fun verifyCurrentUser() {
@@ -264,5 +293,9 @@ class MainActivity : AppCompatActivity() {
 
     fun toastS(string: String) {
         Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
+    }
+
+    fun contacts(view: View) {
+        startActivity(Intent(this, ContactActivity::class.java))
     }
 }

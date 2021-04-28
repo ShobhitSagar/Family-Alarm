@@ -15,17 +15,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/sender_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"/>
-
         <LinearLayout
             android:id="@+id/message_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginTop="10dp">
 
             <TextView
                 android:id="@+id/message_tv"
@@ -33,7 +28,7 @@
                 android:layout_height="wrap_content"
                 android:text="Message"
                 android:textColor="@color/black"
-                android:textSize="30sp" />
+                android:textSize="28sp" />
 
             <Button
                 android:id="@+id/option1_btn"
@@ -73,30 +68,36 @@
 
         </LinearLayout>
 
-        <TextView
+        <LinearLayout
+            android:id="@+id/request_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Requested : "
-            android:textSize="20sp" />
+            android:orientation="vertical"
+            android:visibility="gone">
 
-        <Button
-            android:id="@+id/call_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Call"
-            android:visibility="gone"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Requested : "
+                android:textSize="20sp" />
 
-        <Button
-            android:id="@+id/location_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Send Location"
-            android:visibility="gone" />
+            <Button
+                android:id="@+id/call_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Call"
+                android:visibility="gone"/>
 
+            <Button
+                android:id="@+id/location_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Send Location"
+                android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
