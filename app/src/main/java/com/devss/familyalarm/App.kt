@@ -3,6 +3,9 @@ package com.devss.familyalarm
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.media.AudioAttributes
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 
 class App : Application() {
@@ -38,15 +41,21 @@ class App : Application() {
     }
 
     private fun createMessageNotificationChannel() {
+        val alarmSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        val audioAttr = AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .setUsage(AudioAttributes.USAGE_ALARM).build()
+        val pattern = longArrayOf(500, 500, 500, 500, 500, 500, 500, 500, 500)
         if (versionIsAboveOreo()) run {
-            val replyChannel = NotificationChannel(
+            val messageChannel = NotificationChannel(
                 MESSAGE_CHANNEL_ID,
                 "Message",
                 NotificationManager.IMPORTANCE_HIGH
             )
+            messageChannel.vibrationPattern = pattern
+            messageChannel.setSound(alarmSound, audioAttr)
 
             val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(replyChannel)
+            notificationManager.createNotificationChannel(messageChannel)
         }
     }
 

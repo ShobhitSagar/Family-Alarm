@@ -27,9 +27,15 @@ class ProfileActivity : AppCompatActivity() {
         authenticateUser()
         dbRef = Firebase.database.reference
 
+        val snackbar = Snackbar.make(profile_layout, "Please wait...", Snackbar.LENGTH_INDEFINITE)
+        snackbar.show()
         dbRef.child("users2").child(currentUserId).child("profile")
             .child("name").get().addOnSuccessListener {
-                name_et.setText(it.value.toString())
+                val name = it.value.toString()
+                if (name.isNotBlank() || name != "null") {
+                    name_et.setText(it.value.toString())
+                    snackbar.dismiss()
+                } else snackbar.dismiss()
             }
     }
 
@@ -51,7 +57,14 @@ class ProfileActivity : AppCompatActivity() {
             finish()
 
         } else Snackbar.make(view, "Please enter a name.", Snackbar.LENGTH_SHORT).show()
-
         
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+
+        val userName = name_et.text.toString().trim()
+        if (userName.isBlank())
+            dbRef.child("users2").child(currentUserId).child("profile").child("name").setValue("User")
     }
 }

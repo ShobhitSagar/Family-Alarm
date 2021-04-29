@@ -4,7 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.database.Cursor
 import android.net.Uri
@@ -32,6 +34,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
+    open val FAMILY_ALERT_PREF = "FamilyAlertPref"
 
     private var reqFlag = false
     var receiverId = ""
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var currentUserID: String
     private lateinit var serviceIntent: Intent
+    private lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var auth: FirebaseAuth
     private lateinit var rootUserDbRef: DatabaseReference
@@ -54,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
         verifyCurrentUser()
         cancelNotifications()
-        checkBatteryOptimizations()
+        sharedPreferences = getSharedPreferences(FAMILY_ALERT_PREF, Context.MODE_PRIVATE)
 
         serviceIntent = Intent(this, MainService::class.java)
         // Stop Service
@@ -100,59 +104,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadContacts() {
         hashMap = LinkedHashMap<String, String>()
+        val editor = sharedPreferences.edit()
 
         val snackbar: Snackbar =
             Snackbar.make(root_layout, "Please wait...", Snackbar.LENGTH_INDEFINITE)
         snackbar.show()
         val contactAdapter = ArrayAdapter<String>(this, android.R.layout.simple_list_item_1)
-//        contactDbRef.addValueEventListener(object : ValueEventListener {
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                snapshot.children.forEach {
-//                    val name = it.child("name").value.toString()
-//                    val number = it.key.toString()
-//                    hashMap.put(name, number)
-//                    contactAdapter.add(name)
-//                }
-//                snackbar.dismiss()
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//        })
 
         contactDbRef.get().addOnSuccessListener {
             it.children.forEach {
                 val number = it.key.toString()
                 val name = it.child("name").value.toString()
                 hashMap.put(name, number)
+                editor.putString(number, name)
+                editor.apply()
                 contactAdapter.add(name)
-
             }
             snackbar.dismiss()
         }
-
-//        contactDbRef.addChildEventListener(object : ChildEventListener {
-//            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override fun onChildRemoved(snapshot: DataSnapshot) {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                TODO("Not yet implemented")
-//            }
-//        })
 
         id_actv.setAdapter(contactAdapter)
     }
@@ -225,6 +194,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun initialiseUI() {
         message_et.setText("")
+        opt1_et.setText("")
+        opt2_et.setText("")
+        call_cb.isChecked = false
+        location_cb.isChecked = false
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -289,6 +262,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AuthActivity::class.java))
             finish()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        checkBatteryOptimizations()
     }
 
     fun toastS(string: String) {

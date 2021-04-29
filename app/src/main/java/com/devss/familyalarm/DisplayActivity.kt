@@ -1,6 +1,8 @@
 package com.devss.familyalarm
 
 import android.app.NotificationManager
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -35,24 +37,22 @@ class DisplayActivity : AppCompatActivity() {
 
         verifyCurrentUser()
 
-        senderId = intent.extras?.get("senderId").toString()
-
         val database = Firebase.database
         rootUsersDbRef = database.getReference("users2/")
         alertsDbRef = database.getReference("users2/$currentUserId/alerts/")
 
-        rootUsersDbRef.child(currentUserId).child("profile").child("name").get()
-            .addOnSuccessListener { senderName = it.value.toString() }
-
+        // Display Alert
         alertsDbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) displayAlert() else finish()
             }
+
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
         })
 
+        // Button Click Listeners
         option1_btn.setOnClickListener {
             sendReply(option1_btn.text.toString())
         }
@@ -63,18 +63,16 @@ class DisplayActivity : AppCompatActivity() {
             val text = reply_et.text.trim().toString()
             if (text.isNotEmpty() or text.isNotBlank()) sendReply(text) else toastS("Enter a reply.")
         }
-        call_btn.setOnClickListener { cancelAlert() }
+        call_btn.setOnClickListener {
+//            val callIntent = Intent(Intent.ACTION_CALL)
+//            callIntent.setData(Uri.parse("tel:$senderId"))
+//            startActivity(callIntent)
+            cancelAlert()
+        }
         location_btn.setOnClickListener { cancelAlert() }
         snooze_btn.setOnClickListener { cancelAlert() }
         cancel_btn.setOnClickListener { cancelAlert() }
 
-    }
-
-    private fun sendReply(text: String) {
-        rootUsersDbRef.child(senderId).child("contacts").child(currentUserId).child("reply")
-            .setValue(text)
-        cancelAlert()
-//        rootUsersDbRef.child(senderId).child("replies").child(currentUserId).child("name").setValue(senderName)
     }
 
     private fun displayAlert() {
@@ -83,12 +81,15 @@ class DisplayActivity : AppCompatActivity() {
                 snapshot.children.forEach {
 
                     senderId = it.child("sender").value.toString()
-                    senderName = it.child("sendername").value.toString()
-                    title = if (senderName.isNotBlank()) senderName else applicationInfo.loadLabel(
-                        packageManager
-                    ).toString()
 
-                    if (senderId.isNotBlank() && senderId != "null") alertDelivered(senderId)
+                    rootUsersDbRef.child(currentUserId).child("contacts").child(senderId)
+                        .child("name").get()
+                        .addOnSuccessListener {
+                            senderName = it.value.toString()
+                            title = if (senderName.isNotBlank() && senderName != "null") senderName else "New Alert"
+                        }
+
+                    if (senderId.isNotBlank() && senderId != "null") alertDelivered()
 
                     val msg = it.child("message").value.toString()
                     if (msg.isNotEmpty()) {
@@ -115,7 +116,14 @@ class DisplayActivity : AppCompatActivity() {
         handleAlertDelivery()
     }
 
-    private fun alertDelivered(senderId: String) {
+    private fun sendReply(text: String) {
+        rootUsersDbRef.child(senderId).child("contacts").child(currentUserId).child("reply")
+            .setValue(text)
+        cancelAlert()
+//        rootUsersDbRef.child(senderId).child("replies").child(currentUserId).child("name").setValue(senderName)
+    }
+
+    private fun alertDelivered() {
         rootUsersDbRef.child(senderId).child("contacts").child(currentUserId)
             .child("delivered")
             .setValue("1")
@@ -132,6 +140,7 @@ class DisplayActivity : AppCompatActivity() {
             .child("delivered")
             .removeValue()
         alertsDbRef.child(senderId).removeValue()
+//        finishAffinity()
         finish()
     }
 

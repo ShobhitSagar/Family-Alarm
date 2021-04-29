@@ -90,34 +90,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/opt1_et" />
 
-    <TextView
-        android:id="@+id/request_tv"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Request :"
-        android:textSize="20sp"
+        android:orientation="vertical"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/opt2_et" />
+        app:layout_constraintTop_toBottomOf="@+id/opt2_et">
 
-    <CheckBox
-        android:id="@+id/call_cb"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Call"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/request_tv" />
+        <TextView
+            android:id="@+id/request_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Request :"
+            android:textSize="20sp" />
 
-    <CheckBox
-        android:id="@+id/location_cb"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Location"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/call_cb" />
+        <CheckBox
+            android:id="@+id/call_cb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Call" />
+
+        <CheckBox
+            android:id="@+id/location_cb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location" />
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/temp_tv"

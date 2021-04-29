@@ -2,6 +2,7 @@ package com.devss.familyalarm
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -53,12 +54,12 @@ class ContactActivity : AppCompatActivity() {
 //                false
 //        }
 
-        contacts_lv.setOnItemClickListener { parent, view, position, id ->
-            Toast.makeText(
-                applicationContext,
-                contactAdapter.getItem(position),
-                Toast.LENGTH_SHORT
-            ).show() }
+//        contacts_lv.setOnItemClickListener { parent, view, position, id ->
+//            Toast.makeText(
+//                applicationContext,
+//                contactAdapter.getItem(position),
+//                Toast.LENGTH_SHORT
+//            ).show() }
 
     }
 
@@ -145,5 +146,13 @@ class ContactActivity : AppCompatActivity() {
 
         val alertDialog = builder.create()
         alertDialog.show()
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val intent = Intent(this, MainActivity::class.java)
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+
     }
 }

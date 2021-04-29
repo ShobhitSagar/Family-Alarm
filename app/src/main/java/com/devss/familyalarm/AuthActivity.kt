@@ -19,6 +19,7 @@ class AuthActivity : AppCompatActivity() {
 
     private lateinit var phoneNumber: String
     private lateinit var auth: FirebaseAuth
+    private lateinit var snackbar: Snackbar
     private lateinit var storedVerificationId: String
     private lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
     private lateinit var callbacks: PhoneAuthProvider.OnVerificationStateChangedCallbacks
@@ -49,7 +50,8 @@ class AuthActivity : AppCompatActivity() {
             }
 
             override fun onVerificationFailed(p0: FirebaseException) {
-                Toast.makeText(applicationContext, "Verification Failed!", Toast.LENGTH_SHORT).show()
+                snackbar.dismiss()
+                Toast.makeText(applicationContext, "${p0.message}", Toast.LENGTH_SHORT).show()
             }
 
             override fun onCodeSent(verificationId: String, token: PhoneAuthProvider.ForceResendingToken) {
@@ -89,7 +91,8 @@ class AuthActivity : AppCompatActivity() {
 
         if (areaCode.isNotEmpty() && phoneNumber.length == 10) {
             val phnNum = "+$areaCode$phoneNumber"
-            Snackbar.make(view, "Please wait...", Snackbar.LENGTH_INDEFINITE).show()
+            snackbar = Snackbar.make(view, "Please wait...", Snackbar.LENGTH_INDEFINITE)
+            snackbar.show()
             val options = PhoneAuthOptions.newBuilder(auth)
                 .setPhoneNumber(phnNum)
                 .setTimeout(60L, TimeUnit.SECONDS)

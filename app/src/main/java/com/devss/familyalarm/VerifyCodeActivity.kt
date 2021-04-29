@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.activity_verify_code.*
 class VerifyCodeActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var snackbar: Snackbar
     lateinit var storedVerificationId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +41,8 @@ class VerifyCodeActivity : AppCompatActivity() {
 
         val otp = code_et.text.toString().trim()
         if (otp.isNotEmpty()) {
-            Snackbar.make(view, "Please wait...", Snackbar.LENGTH_INDEFINITE).show()
+            snackbar = Snackbar.make(view, "Please wait...", Snackbar.LENGTH_INDEFINITE)
+            snackbar.show()
             val credential: PhoneAuthCredential = PhoneAuthProvider.getCredential(storedVerificationId, otp)
             signInWithPhoneAuthCredential(credential)
         } else toastS("Enter OTP")
@@ -54,6 +56,7 @@ class VerifyCodeActivity : AppCompatActivity() {
             } else {
                 if (task.exception is FirebaseAuthInvalidCredentialsException) {
                     toastS("Invalid OTP.")
+                    snackbar.dismiss()
                 }
             }
         }
