@@ -51,7 +51,7 @@
                 android:maxLength="6"
                 android:paddingHorizontal="12dp"
                 android:imeOptions="actionDone"
-                android:inputType="number"
+                android:inputType="numberPassword"
                 android:letterSpacing="1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

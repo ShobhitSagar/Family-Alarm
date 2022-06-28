@@ -72,7 +72,6 @@ class DisplayActivity : AppCompatActivity() {
         location_btn.setOnClickListener { cancelAlert() }
         snooze_btn.setOnClickListener { cancelAlert() }
         cancel_btn.setOnClickListener { cancelAlert() }
-
     }
 
     private fun displayAlert() {
@@ -109,7 +108,7 @@ class DisplayActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                toastS(error.message)
             }
         })
 
@@ -120,7 +119,6 @@ class DisplayActivity : AppCompatActivity() {
         rootUsersDbRef.child(senderId).child("contacts").child(currentUserId).child("reply")
             .setValue(text)
         cancelAlert()
-//        rootUsersDbRef.child(senderId).child("replies").child(currentUserId).child("name").setValue(senderName)
     }
 
     private fun alertDelivered() {

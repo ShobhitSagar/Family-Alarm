@@ -136,9 +136,6 @@ class MainService : Service() {
     }
 
     private fun showMessageNotification(senderName: String?, message: String) {
-//        val mp = MediaPlayer.create(applicationContext, alarmSound)
-//        mp.start()
-//        val pattern = longArrayOf(500, 500, 500, 500, 500, 500, 500, 500, 500)
         val notificationIntent = Intent(this, DisplayActivity::class.java)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0)
 //        val alarmSound: Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
@@ -150,7 +147,7 @@ class MainService : Service() {
 //            .setVibrate(pattern)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
-            .setFullScreenIntent(pendingIntent, true)
+//            .setFullScreenIntent(pendingIntent, true)
             .setLights(Color.BLUE, 500, 500)
             .setAutoCancel(true)
 //            .setSound(alarmSound)
