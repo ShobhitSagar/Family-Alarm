@@ -2,19 +2,56 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
     tools:context=".MainActivity">
+
+    <AutoCompleteTextView
+        android:id="@+id/id_actv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Select Contact"
+        android:textSize="20sp"
+        android:imeOptions="actionNext"
+        android:inputType="textCapWords"
+        app:layout_constraintEnd_toStartOf="@+id/add_contact_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
+        android:id="@+id/add_contact_btn"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        app:icon="@drawable/ic_add_person"
+        android:onClick="contacts"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/id_actv"/>
+
+    <TextView
+        android:id="@+id/enter_msg_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter your message :"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/id_actv" />
 
     <EditText
         android:id="@+id/message_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Message"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:imeOptions="actionSend"
+        android:maxLines="1"
+        android:inputType="textCapSentences"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/enter_msg_tv" />
 
     <TextView
         android:id="@+id/option_tv"
@@ -28,55 +65,79 @@
         app:layout_constraintTop_toBottomOf="@+id/message_et" />
 
     <EditText
-        android:id="@+id/option1_et"
+        android:id="@+id/opt1_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Option 1"
+        android:hint="YES"
+        android:imeOptions="actionNext"
+        android:inputType="textCapSentences"
+        android:maxLines="1"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/option_tv" />
 
     <EditText
-        android:id="@+id/option2_et"
+        android:id="@+id/opt2_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Option 2"
+        android:hint="NO"
+        android:imeOptions="actionDone"
+        android:inputType="textCapSentences"
+        android:maxLines="1"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/option1_et" />
+        app:layout_constraintTop_toBottomOf="@+id/opt1_et" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/opt2_et">
+
+        <TextView
+            android:id="@+id/request_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Request :"
+            android:textSize="20sp" />
+
+        <CheckBox
+            android:id="@+id/call_cb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Call" />
+
+        <CheckBox
+            android:id="@+id/location_cb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Location" />
+
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/request_tv"
+        android:id="@+id/temp_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Request :"
+        android:textColor="@color/black"
         android:textSize="20sp"
-        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/send_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/option2_et"/>
-
-    <CheckBox
-        android:id="@+id/call_cb"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Call"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/request_tv" />
-
-    <CheckBox
-        android:id="@+id/location_cb"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Location"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/call_cb" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
+        android:id="@+id/send_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        app:icon="@drawable/ic_send"
+        app:iconGravity="textStart"
         android:text="Send"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
