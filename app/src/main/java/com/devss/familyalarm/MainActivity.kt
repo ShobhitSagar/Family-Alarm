@@ -39,7 +39,6 @@ class MainActivity : AppCompatActivity() {
     private var reqFlag = false
     var receiverId = ""
 
-    private var pressedTime = 0L
     lateinit var hashMap: LinkedHashMap<String, String>
 
     private lateinit var currentUserID: String
@@ -200,7 +199,7 @@ class MainActivity : AppCompatActivity() {
         location_cb.isChecked = false
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return super.onCreateOptionsMenu(menu)
     }
@@ -234,19 +233,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         return super.onOptionsItemSelected(item)
-    }
-
-    // TODO: Handle back pressed
-    override fun onBackPressed() {
-
-        if (pressedTime + 2000 > System.currentTimeMillis()) {
-            super.onBackPressed()
-            finish()
-        } else {
-            Snackbar.make(root_layout, "Press back again to exit!", Snackbar.LENGTH_SHORT).show()
-        }
-        pressedTime = System.currentTimeMillis()
-    }
+    }*/
 
     private fun verifyCurrentUser() {
         auth = FirebaseAuth.getInstance()
@@ -267,6 +254,12 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         checkBatteryOptimizations()
+        getContactName()
+    }
+
+    private fun getContactName() {
+        val name = intent.getStringExtra("name")
+        id_actv.setText(name)
     }
 
     fun toastS(string: String) {

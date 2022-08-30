@@ -45,7 +45,7 @@ class AuthActivity : AppCompatActivity() {
     private fun handleCallBacks() {
         callbacks = object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             override fun onVerificationCompleted(p0: PhoneAuthCredential) {
-                startActivity(Intent(applicationContext, MainActivity::class.java))
+                startActivity(Intent(applicationContext, ContactActivity::class.java))
                 finish()
             }
 
@@ -71,7 +71,7 @@ class AuthActivity : AppCompatActivity() {
         var currentUser = auth.currentUser
         if (currentUser != null) {
             // TODO: Change MainActivity <-> ProfileActivity
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, ContactActivity::class.java))
             finish()
         }
     }
